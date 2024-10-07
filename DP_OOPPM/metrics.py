@@ -66,13 +66,20 @@ def ABPC(y_pred, y_gt, z_values, bw_method="scott", sample_n=5000):
     return abpc
 
 
-# Define a function named ABCC that takes in three arguments:
-# y_pred: predicted values
-# y_gt: ground truth values
-# z_values: binary values indicating the group membership of each sample
-# sample_n: number of samples to generate for the integration (default is 10000)
-def ABCC( y_pred, y_gt, z_values, sample_n = 10000 ):
 
+def ABCC( y_pred, y_gt, z_values, sample_n = 10000 ):
+    """
+    Calculate the Area Between two Cumulative Curves (ABCC) metric.
+
+    Parameters:
+    y_pred (array): Predicted values.
+    y_gt (array): Ground truth values.
+    z_values (array): Binary values indicating the group membership of each sample.
+    sample_n (int, optional): Number of samples to generate for the integration (default is 10000).
+
+    Returns:
+    float: The computed ABCC value.
+    """
     # Flatten the input arrays
     y_pred = y_pred.ravel()
     y_gt = y_gt.ravel()
