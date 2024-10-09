@@ -25,4 +25,6 @@ Datasets/renting_log_medium.xes
 Datasets/Dataset_descriptions.pptx
 playground.py
 playground.ipynb
-DP_OOPPM/__pycache__/import_datasets.cpython-38.pyc
+DP_OOPPM/__pycache__
+.ipynb_checkpoints
+alexander_code.py
