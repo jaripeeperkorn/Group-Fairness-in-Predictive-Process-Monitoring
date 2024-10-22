@@ -20,6 +20,7 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnn_utils
 
+#! we need to know how many categorical features to know how many embedding layers?
 class LSTM_Model(nn.Module):
     def __init__(self, vocab_size, embed_size, dropout, lstm_size, max_length):
         super(Model, self).__init__()
@@ -48,3 +49,5 @@ class LSTM_Model(nn.Module):
         output = self.final_output(output)
         output = torch.sigmoid(output)
         return output
+
+
