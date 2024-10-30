@@ -6,9 +6,16 @@ import torch
 
 #! check if standard values make sense
 def train_and_return_LSTM(X_train, y_train, loss_function, vocab_size, embed_size=64, dropout=0.2, lstm_size=64, num_lstm=1, max_length=8, learning_rate=0.001, max_epochs=200):
+    
+    # Setting up GPU 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("device:", device)
 
     #Define the model
     model = predictive_models.LSTM_Model(vocab_size, embed_size, dropout, lstm_size, num_lstm, max_length)
+
+    # Assign to GPU 
+    model.to(device)
     
     #set model to train
     model.train()
@@ -35,14 +42,18 @@ def train_and_return_LSTM(X_train, y_train, loss_function, vocab_size, embed_siz
         print('No correct loss function given, defaulted to binary cross entropy')
         criterion = torch.nn.BCELoss()
 
-    #! decide if we want to use Adam or not, check what state of art is now
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    #! decide if we want to use NAdam or not, check what state of art is now
+
+    # Optimizer and scheduler used by benchmark
+    optimizer = torch.optim.NAdam(model.parameters(), lr=learning_rate)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=16, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=True)
+
 
     for epoch in range(max_epochs):
         losses = []
         outputs = model(X_train)
         #outputs = model(X_train.unsqueeze(-1)).squeeze()
-        y_train =   _train.unsqueeze(-1) #you need this if your LSTM model only predicts 1 probability
+        y_train =  y_train.unsqueeze(-1) #you need this if your LSTM model only predicts 1 probability
         optimizer.zero_grad()
         loss = optimizer(outputs, y_train)
         loss.backwards()
