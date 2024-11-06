@@ -1,0 +1,1 @@
+# Define for the used event logs, which are categorical, which are numerical and chage order etc.

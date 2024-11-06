@@ -1,8 +1,8 @@
+#For the specific logs we use, there is no column 'outcome' yet, so we define it here.
+
 import pandas as pd
 
-
-#!to do: add function that deletes cases from label definition onwards? Or do we not care?
-
+#!to do: add function that deletes cases from label definition onwards?
 
 def add_label(df, log_name, act_label = 'concept:name', case_id='case:concept:name'):
     """
