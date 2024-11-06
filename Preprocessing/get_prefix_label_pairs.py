@@ -82,6 +82,9 @@ def create_pairs(df, max_prefix_length, case_id='case:concept:name', outcome='ou
     # Split into X and y data with prefixes
     X_data = []
     y_data = []
+
+    #! add a check whether max_prefix_length < max length cases
+
     # Iterate over each unique case ID
     for case in df[case_id].unique():
         case_df = df[df[case_id] == case]

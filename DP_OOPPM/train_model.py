@@ -1,25 +1,39 @@
 import DP_OOPPM.predictive_models as predictive_models
 import DP_OOPPM.loss_functions as loss_functions
 
+
+import math
 import torch
 
 
 #! check if standard values make sense
-def train_and_return_LSTM(X_train, y_train, loss_function, vocab_size, embed_size=64, dropout=0.2, lstm_size=64, num_lstm=1, max_length=8, learning_rate=0.001, max_epochs=200):
+def train_and_return_LSTM(X_train, y_train, loss_function, 
+                          vocab_sizes, embed_sizes=None, num_numerical_features=None, 
+                          dropout=0.2, lstm_size=64, 
+                          num_lstm=1, max_length=8, learning_rate=0.001, max_epochs=200,
+                          get_history=False):
+
+
+    if embed_sizes == None:
+        embed_sizes = [math.sqrt(vocab_sizes[i]) for i in range(len(vocab_sizes))]
+    if num_numerical_features == None:
+        num_numerical_features = 0
+    
     
     # Setting up GPU 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("device:", device)
 
-    #Define the model
-    model = predictive_models.LSTM_Model(vocab_size, embed_size, dropout, lstm_size, num_lstm, max_length)
+    # Define the model
+    model = predictive_models.LSTM_Model(vocab_sizes=vocab_sizes, embed_sizes=embed_sizes, 
+                                         num_numerical_features=num_numerical_features, max_length=max_length, 
+                                         dropout=dropout, lstm_size=lstm_size, num_lstm=num_lstm)
 
     # Assign to GPU 
     model.to(device)
     
     #set model to train
     model.train()
-
 
     #Pick a loss function
     if loss_function == 'dp':
@@ -46,22 +60,45 @@ def train_and_return_LSTM(X_train, y_train, loss_function, vocab_size, embed_siz
 
     # Optimizer and scheduler used by benchmark
     optimizer = torch.optim.NAdam(model.parameters(), lr=learning_rate)
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=16, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=True)
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='min', factor=0.5, patience=16, threshold=0.0001,
+        threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=True
+    )
 
+    # Move data to device
+    X_train, y_train = X_train.to(device), y_train.to(device)
+
+    losses = []
 
     for epoch in range(max_epochs):
-        losses = []
-        outputs = model(X_train)
-        #outputs = model(X_train.unsqueeze(-1)).squeeze()
-        y_train =  y_train.unsqueeze(-1) #you need this if your LSTM model only predicts 1 probability
-        optimizer.zero_grad()
-        loss = optimizer(outputs, y_train)
-        loss.backwards()
-        optimizer.step()
-        losses.append([loss.item()])
-        if (epoch+1)%10 == 0:
-            print(f"Epoch [{epoch+1}/{max_epochs}], Loss: {loss.item():.4f}")
+            # Set model to training mode each epoch
+            model.train()
 
-    #return model in test state
-    model.test()
-    return model()
+            # Forward pass
+            outputs = model(X_train)
+            
+            # Adjust y_train shape if needed for loss function compatibility
+            y_train = y_train.unsqueeze(-1)
+
+            # Zero gradients, compute loss, backward pass, and optimize
+            optimizer.zero_grad()
+            loss = criterion(outputs, y_train)
+            loss.backward()
+            optimizer.step()
+
+            # Track loss and adjust learning rate as needed
+            losses.append(loss.item())
+            lr_scheduler.step(loss)
+
+            # Print progress every 10 epochs
+            if (epoch + 1) % 10 == 0:
+                print(f"Epoch [{epoch+1}/{max_epochs}], Loss: {loss.item():.4f}")
+
+    # Set model to evaluation mode before returning
+    model.eval()
+
+    if get_history == True:
+        return model, losses
+    else:
+        return model
+    
