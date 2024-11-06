@@ -15,7 +15,8 @@ def train_and_return_LSTM(X_train, y_train, loss_function,
 
 
     if embed_sizes == None:
-        embed_sizes = [math.sqrt(vocab_sizes[i]) for i in range(len(vocab_sizes))]
+        #Default equal to square root
+        embed_sizes = [math.ceil(math.sqrt(vocab_sizes[i])) for i in range(len(vocab_sizes))]
     if num_numerical_features == None:
         num_numerical_features = 0
     

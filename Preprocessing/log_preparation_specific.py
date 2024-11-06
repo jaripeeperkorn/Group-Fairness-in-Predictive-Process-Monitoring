@@ -1,6 +1,14 @@
-import encode_categorical_data
-import split_data
-import get_prefix_label_pairs
+import Preprocessing.encode_categorical_data as encode_categorical_data
+import Preprocessing.split_data as split_data
+import Preprocessing.get_prefix_label_pairs as get_prefix_label_pairs
+
+from sklearn.preprocessing import MinMaxScaler
+
+
+#! add sensitive parameter extractor
+
+#! add settings other log types
+
 
 
 # Define for the used event logs, which are categorical, which are numerical and change order etc.
@@ -10,41 +18,37 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, act_label = 'co
         #add outcome label
         df = add_label(df, "hiring", act_label, case_id)
         #order features
-        df = clean_features(df, "hiring")
+        df, num_numerical_features, true_num_feature_list = clean_order_features(df, "hiring")
         #encode features
         df, vocsizes = encode_features(df, "hiring")
-        #! double check !!!!
-        num_numerical_features = 6
+
 
     elif log_name == "hospital":
         #add outcome label
         df = add_label(df, "hospital", act_label, case_id)
         #order features
-        df = clean_features(df, "hospital")
+        df, num_numerical_features, true_num_feature_list  = clean_order_features(df, "hospital")
         #encode features
         df, vocsizes = encode_features(df, "hospital")
-        #! double check !!!!
-        num_numerical_features = 6
+
 
     elif log_name == "lending":
         #add outcome label
         df = add_label(df, "lending", act_label, case_id)
         #order features
-        df = clean_features(df, "lending")
+        df, num_numerical_features, true_num_feature_list  = clean_order_features(df, "lending")
         #encode features
         df, vocsizes = encode_features(df, "lending")
-        #! double check !!!!
-        num_numerical_features = 6
+
        
     elif log_name == "renting":
         #add outcome label
         df = add_label(df, "renting", act_label, case_id)
         #order features
-        df = clean_features(df, "renting")
+        df, num_numerical_features, true_num_feature_list  = clean_order_features(df, "renting")
         #encode features
         df, vocsizes = encode_features(df, "renting")
-        #! double check !!!!
-        num_numerical_features = 6
+
        
     else:
         #todo: delete names of logs we didn't use
@@ -52,12 +56,22 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, act_label = 'co
     
     tr, te = split_data.train_test_split(df, test_fraction=test_fraction)
 
+
+    #scale the true numerical data
+    scaler = MinMaxScaler()
+    tr_old_shape = tr[true_num_feature_list].shape
+    tr[true_num_feature_list] = scaler.fit_transform(tr[true_num_feature_list].to_numpy().reshape(-1,1)).reshape(tr_old_shape)
+    te_old_shape = te[true_num_feature_list].shape
+    te[true_num_feature_list] = scaler.transform(te[true_num_feature_list].to_numpy().reshape(-1,1)).reshape(te_old_shape)
+
     # todo add possiblitiy validation set split here?
 
+    #! TODO FIX FOLLOWING FUNCTION
+    #in this function the case_ID is droppend anyway
     tr_X, tr_y = get_prefix_label_pairs.create_pairs(tr, max_prefix_len)
     te_X, te_y = get_prefix_label_pairs.create_pairs(te, max_prefix_len)
 
-    #! ADD CONVERSION TO PYTORCH?
+    #! ADD CONVERSION TO PYTORCH TENSOR?
 
     return tr_X, tr_y, te_X, te_y, vocsizes, num_numerical_features
 
@@ -119,15 +133,32 @@ def add_label_activity_presence(df, act_label, case_id, outcome_act):
     df['outcome'] = df[case_id].apply(lambda x: 1 if x in outcome_cases else 0)
     return df
 
-def clean_features(df, log_name):
+def clean_order_features(df, log_name):
     #todo ORDER FEATURES, REMOVE DUPLICATES, CONVERT BOOLEAN TO NUMERICAL, MAKE SURE OUTCOME IS LAST
     if log_name == "hiring":
-        # todo!
-        new_df = df
+        #! we delete time for now
+        categorical_features = ['concept:name', 'resource']
+        binary_features = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:religious']
+        num_features = ['case:age', 'case:yearsOfEducation']
+        num_numerical_features = len(binary_features) + len(num_features)
+        for col in binary_features:
+            #convert to integers instead of booleans
+            df[col] = df[col].astype(int)
+        #we add the case id in case we need it later again
+        cols_order_filtered = categorical_features + binary_features + num_features + ['case:concept:name', 'outcome']
+        df = df[cols_order_filtered]
+    
+    else:
+        #todo: delete names of logs we didn't use
+        raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
+    
+    #we also return list of true numericals to know which to minmaxscale
+    return df, num_numerical_features, num_features 
 
+'''
     elif log_name == "hospital":
         # todo!
-        new_df = df
+   
 
     elif log_name == "lending":
         # todo!
@@ -136,19 +167,15 @@ def clean_features(df, log_name):
     elif log_name == "renting":
         # todo!
         new_df = df
-
-    else:
-        #todo: delete names of logs we didn't use
-        raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
-    return new_df
-
+    '''
+    
 
 def encode_features(df, log_name):
     voc_sizes = []
     if log_name == "hiring":
         # todo!
         #aanvullen?
-        cat_features = ['concept_name', 'resource']
+        cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()
             voc_sizes.append(vocsize)
@@ -157,7 +184,7 @@ def encode_features(df, log_name):
     elif log_name == "hospital":
         # todo!
         #aanvullen?
-        cat_features = ['concept_name', 'resource']
+        cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()
             voc_sizes.append(vocsize)
@@ -166,7 +193,7 @@ def encode_features(df, log_name):
     elif log_name == "lending":
         # todo!
         #aanvullen?
-        cat_features = ['concept_name', 'resource']
+        cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()
             voc_sizes.append(vocsize)
@@ -175,7 +202,7 @@ def encode_features(df, log_name):
     elif log_name == "renting":
         # todo!
         #aanvullen?
-        cat_features = ['concept_name', 'resource']
+        cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()
             voc_sizes.append(vocsize)
