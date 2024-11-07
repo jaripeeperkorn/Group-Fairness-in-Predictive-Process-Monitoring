@@ -4,6 +4,18 @@ import Preprocessing.list_to_tensor as convert
 import DP_OOPPM.train_model as train_model
 import DP_OOPPM.evaluate_model as eval
 
+import numpy as np
+
+
+
+#todo:
+#! Add masking (or fix padding)
+#! Change default values training/LSTM
+#! Change default embedding sizes + add possibility for manual choosing
+
+
+
+
 log = imp.import_xes("Datasets/hiring_log_high.xes")
 
 
@@ -22,11 +34,22 @@ y_train = y_train.view(-1, 1)
 y_val = y_val.view(-1, 1)
 
 
+te_X = convert.nested_list_to_tensor(te_X)
+te_y = np.array(te_y)
+te_s = np.array(te_s)
+
+
 model, loss_history, val_loss_history = train_model.train_and_return_LSTM(X_train = X_train, y_train= y_train,
                                                         loss_function = 'BCE', 
                                                         vocab_sizes = vocsizes, 
                                                         num_numerical_features=num_numerical_features, 
-                                                        dropout=0.2, lstm_size=64, num_lstm=1, max_length=8, learning_rate=0.001, max_epochs=200, patience =10,
+                                                        dropout=0.2, lstm_size=64, num_lstm=1, max_length=8, learning_rate=0.001, max_epochs=100, patience =10,
                                                         get_history=True, X_val=X_val, y_val=y_val)
 
 
+
+te_output = model(te_X)
+
+te_np = te_output.detach().numpy()
+
+eval.get_evaluation(y_gt= te_y, y_pred=te_np, s=te_s, binary_threshold = 0.5)
