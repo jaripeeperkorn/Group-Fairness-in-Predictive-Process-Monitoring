@@ -4,15 +4,19 @@ import Preprocessing.get_prefix_label_pairs as get_prefix_label_pairs
 
 from sklearn.preprocessing import MinMaxScaler
 
+import numpy as np
 
 #! add sensitive parameter extractor
 
 #! add settings other log types
 
-
+#! ADD ORDER DATAFERAME SOMEWHERE?
 
 # Define for the used event logs, which are categorical, which are numerical and change order etc.
-def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, act_label = 'concept:name', case_id='case:concept:name'):
+def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiation_set = False, validation_fraction=0.1, act_label = 'concept:name', case_id='case:concept:name', sensitive_column = 'case:gender', drop_sensitive=False):
+    
+    #added to be sure later on
+    df = sort_log(df)
     
     if log_name == "hiring":
         #add outcome label
@@ -54,6 +58,7 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, act_label = 'co
         #todo: delete names of logs we didn't use
         raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
     
+        
     tr, te = split_data.train_test_split(df, test_fraction=test_fraction)
 
 
@@ -66,14 +71,24 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, act_label = 'co
 
     # todo add possiblitiy validation set split here?
 
-    #! TODO FIX FOLLOWING FUNCTION
+
     #in this function the case_ID is droppend anyway
-    tr_X, tr_y = get_prefix_label_pairs.create_pairs(tr, max_prefix_len)
-    te_X, te_y = get_prefix_label_pairs.create_pairs(te, max_prefix_len)
+    trval_X, trval_y, trval_s, updated_max_prefix_length = get_prefix_label_pairs.create_pairs_train_sensitive(df=tr, max_prefix_length=max_prefix_len, sensitive_column=sensitive_column, drop_sensitive=drop_sensitive, case_id=case_id, outcome='outcome')
+    te_X, te_y, te_s = get_prefix_label_pairs.create_pairs_test_sensitive(df=te, max_prefix_length=updated_max_prefix_length, sensitive_column=sensitive_column, drop_sensitive=drop_sensitive, case_id=case_id, outcome='outcome')
 
-    #! ADD CONVERSION TO PYTORCH TENSOR?
-
-    return tr_X, tr_y, te_X, te_y, vocsizes, num_numerical_features
+    if return_valdiation_set == False:
+        return trval_X, trval_y, trval_s, te_X, te_y, te_s, vocsizes, num_numerical_features
+    
+    else:
+        #split off validation set
+        val_split_point = int(len(trval_y)*(1.0-validation_fraction))
+        tr_X = trval_X[:val_split_point]
+        tr_y = trval_y[:val_split_point]
+        tr_s = trval_s[:val_split_point]
+        val_X = trval_X[val_split_point:]
+        val_y = trval_y[val_split_point:]
+        val_s = trval_s[val_split_point:]
+        return tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features
 
 
 #!to do: add function that deletes cases from label definition onwards?
@@ -173,8 +188,6 @@ def clean_order_features(df, log_name):
 def encode_features(df, log_name):
     voc_sizes = []
     if log_name == "hiring":
-        # todo!
-        #aanvullen?
         cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()
@@ -213,3 +226,31 @@ def encode_features(df, log_name):
         raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
     
     return new_df, voc_sizes
+
+
+def sort_log(df, case_id = 'case:concept:name', timestamp = 'time:timestamp'):
+    """Sort events in event log such that cases that occur first are stored 
+    first, and such that events within the same case are stored based on timestamp. 
+
+    Parameters
+    ----------
+    df : _type_
+        _description_
+    case_id : str, optional
+        _description_, by default 'case:concept:name'
+    timestamp : str, optional
+        _description_, by default 'time:timestamp'
+    act_label : str, optional
+        _description_, by default 'concept:name'
+    """
+    df_help = df.sort_values([case_id, timestamp], ascending = [True, True], kind='mergesort')
+    # Now take first row of every case_id: this contains first stamp 
+    df_first = df_help.drop_duplicates(subset = case_id)[[case_id, timestamp]]
+    df_first = df_first.sort_values(timestamp, ascending = True, kind='mergesort')
+    # Include integer index to sort on. 
+    df_first['case_id_int'] = [i for i in range(len(df_first))]
+    df_first = df_first.drop(timestamp, axis = 1)
+    df = df.merge(df_first, on = case_id, how = 'left')
+    df = df.sort_values(['case_id_int', timestamp], ascending = [True, True], kind='mergesort')
+    df = df.drop('case_id_int', axis = 1)
+    return df 

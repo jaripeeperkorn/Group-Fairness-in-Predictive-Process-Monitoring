@@ -1,105 +1,162 @@
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
-#! rewrite this: mayeb look at Brecht's code anyway
+#todo Add version that also return AND REMOVES sentive parameter lists?
 
-def create_and_preprocess_pairs_fixed_length(df, prefix_length, binary_features, categorical_features, numerical_features, 
-                                             case_id='case:concept:name', outcome='outcome'):
-    """
-    Creates fixed-length prefixes for each case in the DataFrame, applies specified transformations, and splits into X and y data.
-    
-    Parameters:
-    - df: DataFrame containing the event log data.
-    - prefix_length: Integer indicating the fixed length of prefixes.
-    - binary_features: List of column names for binary features to include in X_data.
-    - categorical_features: List of column names for categorical features to include in X_data.
-    - numerical_features: List of column names for numerical features to include in X_data.
-    - case_id: Column name of the case ID in df (default 'case:concept:name').
-    - outcome: Column name of the outcome in df (default 'outcome').
+def create_pairs_train(df, max_prefix_length, case_id='case:concept:name', outcome='outcome'):
+    #Difference with non_train is that we check max length here and return it, so that it is always the same for text and validation as well.
 
-    Returns:
-    - X_data: List of arrays containing selected and transformed features for each prefix.
-    - y_data: List of outcome values corresponding to each prefix.
-    """
-    X_data = []
-    y_data = []
+    X, y = create_lists(df, case_id, outcome)
 
-    # Combine all specified feature types to create the filtered feature set
-    selected_features = binary_features + categorical_features + numerical_features
+    #check if max_prefix_length > max length sequences
+    max_seq_len = FindMaxLength(X)
+    if max_prefix_length > max_seq_len:
+        print("Maximum prefix length given is higher than longest case up until decision point.")
+        print("Changed to that max length.")
+        max_prefix_length = max_seq_len
 
-    # Standardize numerical features
-    scaler = StandardScaler()
-    df[numerical_features] = scaler.fit_transform(df[numerical_features])
+    prefixes = []
+    outcomes = []
 
-    # Convert binary features to 0/1 (assuming boolean values True/False)
-    df[binary_features] = df[binary_features].astype(int)
+    for i in range(len(X)):
+        for j in range(1, len(X[i])):
+            if j <= max_prefix_length:
+                prefixes.append(X[i][0:j])
+                outcomes.append(y[i])
+            if j > max_prefix_length:
+                prefixes.append(X[i][j-max_prefix_length:j])
+                outcomes.append(y[i])
 
-    # One-hot encode categorical features
-    df = pd.get_dummies(df, columns=categorical_features)
+    return prefixes, outcomes, max_prefix_length
 
-    # Update selected_features to reflect new one-hot encoded columns for categorical features
-    selected_features = [col for col in df.columns if col in binary_features or col in numerical_features or 
-                         col.startswith(tuple(categorical_features))]
+def create_pairs_train_sensitive(df, max_prefix_length, sensitive_column, drop_sensitive = False, case_id='case:concept:name', outcome='outcome'):
+    #Difference with non_train is that we check max length here and return it, so that it is always the same for text and validation as well.
 
-    # Iterate over each unique case ID
-    for case in df[case_id].unique():
-        case_df = df[df[case_id] == case]
+    X, y, s = create_lists_sensitive(df, sensitive_column, drop_sensitive, case_id, outcome)
 
-        # Filter the DataFrame to only include selected features after transformations
-        case_df_filtered = case_df[selected_features]
+    #check if max_prefix_length > max length sequences
+    max_seq_len = FindMaxLength(X)
+    if max_prefix_length > max_seq_len:
+        print("Maximum prefix length given is higher than longest case up until decision point.")
+        print("Changed to that max length.")
+        max_prefix_length = max_seq_len
 
-        # Create prefixes for the given case
-        for i in range(prefix_length - 1, len(case_df)):
-            # Get the prefix slice with specified features only
-            prefix_X = case_df_filtered.iloc[i - prefix_length:i].values
-            # Append the prefix to X_data
-            X_data.append(prefix_X)
-            # Append the corresponding outcome value
-            y_data.append(case_df.iloc[i - 1][outcome])
-            
-    return X_data, y_data
+    prefixes = []
+    outcomes = []
+    sensitives = []
 
-def create_pairs_fixed_length(df, prefix_length, binary_features, categorical_features, numerical_features, case_id='case:concept:name', outcome='outcome'):
-    # Alternative function where we only use prefixes of a certain length, no padding
-    # Split into X and y data with prefixes
-    X_data = []
-    y_data = []
-    # Iterate over each unique case ID
-    for case in df[case_id].unique():
-        case_df = df[df[case_id] == case]
-        selected_features = binary_features + categorical_features + numerical_features
-        # Create prefixes for the given case
-        for i in range(prefix_length-1, len(case_df)):
-            prefix_X = case_df.iloc[i-prefix_length:i].values
-            # Append the prefix to X_data
-            X_data.append(prefix_X)
-            # Append the corresponding outcome value
-            y_data.append(case_df.iloc[i - 1][outcome])
-    return X_data, y_data
+    for i in range(len(X)):
+        for j in range(1, len(X[i])):
+            if j <= max_prefix_length:
+                prefixes.append(X[i][0:j])
+                outcomes.append(y[i])
+                sensitives.append(s[i])
+            if j > max_prefix_length:
+                prefixes.append(X[i][j-max_prefix_length:j])
+                outcomes.append(y[i])
+                sensitives.append(s[i])
+
+    return prefixes, outcomes, sensitives, max_prefix_length
 
 
-def create_pairs(df, max_prefix_length, case_id='case:concept:name', outcome='outcome'):
-    # Split into X and y data with prefixes
-    X_data = []
-    y_data = []
 
-    #! add a check whether max_prefix_length < max length cases
 
-    # Iterate over each unique case ID
-    for case in df[case_id].unique():
-        case_df = df[df[case_id] == case]
+
+def create_pairs_test(df, max_prefix_length, case_id='case:concept:name', outcome='outcome'):
+    #Difference with train is that we assume max length here
+
+    X, y = create_lists(df, case_id, outcome)
+
+    prefixes = []
+    outcomes = []
+
+    for i in range(len(X)):
+        for j in range(1, len(X[i])):
+            if j <= max_prefix_length:
+                prefixes.append(X[i][0:j])
+                outcomes.append(y[i])
+            if j > max_prefix_length:
+                prefixes.append(X[i][j-max_prefix_length:j])
+                outcomes.append(y[i])
+
+    return prefixes, outcomes
+
+
+def create_pairs_test_sensitive(df, max_prefix_length, sensitive_column, drop_sensitive = False, case_id='case:concept:name', outcome='outcome'):
+     #Difference with train is that we assume max length here
+
+    X, y, s = create_lists_sensitive(df, sensitive_column, drop_sensitive, case_id, outcome)
+
+    prefixes = []
+    outcomes = []
+    sensitives = []
+
+    for i in range(len(X)):
+        for j in range(1, len(X[i])):
+            if j <= max_prefix_length:
+                prefixes.append(X[i][0:j])
+                outcomes.append(y[i])
+                sensitives.append(s[i])
+            if j > max_prefix_length:
+                prefixes.append(X[i][j-max_prefix_length:j])
+                outcomes.append(y[i])
+                sensitives.append(s[i])
+
+    return prefixes, outcomes, sensitives
+
+
+def create_lists(df, case_id='case:concept:name', outcome='outcome'):
+    X = []
+    y = []
+    # Group by the case_id column to separate sequences
+    grouped = df.groupby(case_id)
+    # Process each sequence
+    for _, group in grouped:
+        # Sort group by index to keep the original order of events within each case
+        group = group.sort_index()
         
-        # Create prefixes for the given case
-        for i in range(1, min(len(case_df), max_prefix_length) + 1):
-            # Get prefix with last event the one at position i in case
-            #! to do drop outcome columns etc.
-            if i < max_prefix_length:
-                prefix_X = case_df.iloc[:i].values
-                #! to do add padding
-            if i >= max_prefix_length:
-                prefix_X = case_df.iloc[i-max_prefix_length:i].values
-            # Append the prefix to X_data
-            X_data.append(prefix_X)
-            # Append the corresponding outcome value
-            y_data.append(case_df.iloc[i - 1][outcome])
-    return X_data, y_data
+        # Drop the 'case:concept:name' and 'outcome' columns
+        sequence = group.drop(columns=[case_id, outcome]).values.tolist()
+        
+        # Append the sequence to X
+        X.append(sequence)
+        
+        # Append the outcome value of the last event in the sequence to y
+        y.append(group[outcome].iloc[-1])
+        
+    return X, y
+
+
+def create_lists_sensitive(df, sensitive_column, drop_sensitive=False, case_id='case:concept:name', outcome='outcome'):
+    X = []
+    y = []
+    s = []
+    # Group by the case_id column to separate sequences
+    grouped = df.groupby(case_id)
+    # Process each sequence
+    for _, group in grouped:
+        # Sort group by index to keep the original order of events within each case
+        group = group.sort_index()
+        
+        if drop_sensitive == False:
+            # Drop the 'case:concept:name' and 'outcome' columns
+            sequence = group.drop(columns=[case_id, outcome]).values.tolist()
+        else:
+            sequence = group.drop(columns=[case_id, outcome, sensitive_column]).values.tolist()
+        
+        # Append the sequence to X
+        X.append(sequence)
+        
+        # Append the outcome value of the last event in the sequence to y
+        y.append(group[outcome].iloc[-1])
+
+        #append sensitive
+        s.append(group[sensitive_column].iloc[-1])
+        
+    return X, y, s
+
+
+def FindMaxLength(lst):
+    maxList = max(lst, key = lambda i: len(i))
+    maxLength = len(maxList)
+     
+    return maxLength
+

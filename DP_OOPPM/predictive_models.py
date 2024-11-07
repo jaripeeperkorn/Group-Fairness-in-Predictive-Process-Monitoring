@@ -25,6 +25,7 @@ class LSTM_Model(nn.Module):
          #! we assume the input and the lists are in the same order
         self.vocab_sizes = vocab_sizes 
         self.embed_sizes = embed_sizes
+        self.dropout = dropout
 
         #! binary features are counted as numerical here
         self.num_numerical_features = num_numerical_features
@@ -36,7 +37,7 @@ class LSTM_Model(nn.Module):
         self.emb_layers = nn.ModuleList(
             [nn.Embedding(self.vocab_sizes[i], self.embed_sizes[i]) for i in range(len(vocab_sizes))]
             )
-        self.dropout = nn.Dropout(self.dropout)
+        self.dropout_layer = nn.Dropout(self.dropout)
         self.lstm = nn.LSTM(input_size=self.total_num_features_after_emb, hidden_size=self.lstm_size, num_layers=self.num_lstm, batch_first=True, bidirectional=bidirectional)
         #self.bn = nn.BatchNorm1d(self.lstm_size)
         self.dense = nn.Linear(self.lstm_size, 1)
@@ -48,8 +49,8 @@ class LSTM_Model(nn.Module):
         batch_size, seq_len, _ = inputs.size()
 
         # Separate categorical and numerical features at each timestep
-        categorical_inputs = inputs[:, :, :len(self.vocab_sizes)]
-        numerical_inputs = inputs[:, :, len(self.vocab_sizes):]  # Remaining part for numerical features
+        categorical_inputs = inputs[:, :, :len(self.vocab_sizes)].long()
+        numerical_inputs = inputs[:, :, len(self.vocab_sizes):].long()  # Remaining part for numerical features
 
         # Embed each categorical feature separately for each timestep and concatenate embeddings
         embeddings = [emb_layer(categorical_inputs[:, :, i]) for i, emb_layer in enumerate(self.emb_layers)]
@@ -59,7 +60,7 @@ class LSTM_Model(nn.Module):
         combined_inputs = torch.cat([embedded_categorical, numerical_inputs], dim=-1)  # Shape (batch_size, seq_len, total_num_features_after_emb)
 
         #Apply dropout
-        x = self.dropout(combined_inputs)
+        x = self.dropout_layer(combined_inputs)
 
         # Pass the combined inputs through the LSTM
         lstm_out, _ = self.lstm(x)  # Output shape (batch_size, seq_len, lstm_size)
@@ -73,6 +74,7 @@ class LSTM_Model(nn.Module):
 
         # Final dense layer to get output
         output = self.dense(lstm_out)
+        output = torch.sigmoid(output)
 
         return output
 
