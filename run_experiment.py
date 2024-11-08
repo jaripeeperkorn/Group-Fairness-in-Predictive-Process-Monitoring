@@ -11,11 +11,11 @@ import numpy as np
 
 
 #todo:
+
+#! we use right padding (and masking), because easier, is this really an issue?
+
 #! ADD REG DELAY: A FEW EPOCHS WHERE WE NEVER USE FAIR LOSS ONLY BCE? → ask Simon if makes sense
 
-
-#! Add masking (or fix padding)
-#! Change default values training/LSTM
 #! Change default embedding sizes + add possibility for manual choosing
 
 #!fix gpu

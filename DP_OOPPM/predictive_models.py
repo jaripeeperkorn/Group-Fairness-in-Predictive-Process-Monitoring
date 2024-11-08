@@ -64,6 +64,8 @@ class LSTM_Model(nn.Module):
         x = self.dropout_layer(combined_inputs)
 
         # Pack the sequence for masking
+        # sequence_lengths needs to be on the CPU is due to a specific requirement of PyTorch's pack_padded_sequence function, 
+        # which currently only accepts the lengths argument on the CPU
         packed_input = pack_padded_sequence(x, sequence_lengths.cpu(), batch_first=True, enforce_sorted=False)
 
         # Pass the combined packed inputs through the LSTM
@@ -74,7 +76,8 @@ class LSTM_Model(nn.Module):
 
         # Take the last output for classification or regression
         #last_outputs = lstm_out[:, -1, :]  # (batch_size, lstm_size) - last timestep's output for each sequence
-        last_outputs = lstm_out[torch.arange(batch_size), sequence_lengths - 1]
+        #now we use the last non-padded output!
+        last_outputs = lstm_out[torch.arange(batch_size), sequence_lengths - 1, :]
 
         # Apply batch normalization
         #!if we do also need to permute and re permute afterwards .permute(0, 2, 1)
