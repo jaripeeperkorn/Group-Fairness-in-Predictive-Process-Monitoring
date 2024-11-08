@@ -33,20 +33,13 @@ def run_hyper(dataset_name, logname):
     s_val = convert.list_to_tensor(val_s)
 
     # Hyperparameter grids
-    #num_layers_lst = [1, 2]
-    #bidirectional_lst = [False, True]
-    #LSTM_size_lst = [16, 32, 64]
-    #batch_size_lst = [128] #we need a large size anyway later
-    #learning_rate_lst = [0.0001, 0.001, 0.01]
-    #dropout_lst = [0.0, 0.2, 0.4]
-
-    # Hyperparameter grids
     num_layers_lst = [1, 2]
-    bidirectional_lst = [False]
-    LSTM_size_lst = [16]
-    batch_size_lst = [128]
-    learning_rate_lst = [0.0001]
-    dropout_lst = [0.2]
+    bidirectional_lst = [False, True]
+    LSTM_size_lst = [16, 32, 64]
+    batch_size_lst = [128] #we need a large size anyway later
+    learning_rate_lst = [0.0001, 0.001, 0.01]
+    dropout_lst = [0.0, 0.2, 0.4]
+
 
     # Generate all combinations of hyperparameters
     hyperparameter_combinations = product(num_layers_lst, bidirectional_lst, LSTM_size_lst, batch_size_lst, 
