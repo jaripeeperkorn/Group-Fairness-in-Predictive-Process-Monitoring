@@ -1,20 +1,22 @@
 import DP_OOPPM.predictive_models as predictive_models
-import DP_OOPPM.loss_functions as loss_functions
+import DP_OOPPM.custom_loss_functions as custom_loss_functions
 
 
 import math
 import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 import numpy as np
 
 
 
 #! check if standard values make sense
-def train_and_return_LSTM(X_train, y_train, loss_function, 
+def train_and_return_LSTM(X_train, y_train, s_train, loss_function, 
                           vocab_sizes, embed_sizes=None, num_numerical_features=None, 
                           dropout=0.2, lstm_size=64, 
-                          num_lstm=1, max_length=8, learning_rate=0.001, max_epochs=200,
-                          patience=10, get_history=False, X_val=None, y_val=None):
+                          num_lstm=1, max_length=8, learning_rate=0.001, max_epochs=200, batch_size=128,
+                          patience=10, get_history=False, X_val=None, y_val=None, s_val=None,
+                          balance_fair_BCE = 0.1):
 
 
     if embed_sizes == None:
@@ -33,7 +35,7 @@ def train_and_return_LSTM(X_train, y_train, loss_function,
                                          num_numerical_features=num_numerical_features, max_length=max_length, 
                                          dropout=dropout, lstm_size=lstm_size, num_lstm=num_lstm)
 
-    # Assign to GPU 
+    # Assign to device
     model.to(device)
     
     #set model to train
@@ -41,36 +43,46 @@ def train_and_return_LSTM(X_train, y_train, loss_function,
 
     #Pick a loss function
     if loss_function == 'dp':
-        criterion = loss_functions.dp_reg()
+        criterion = custom_loss_functions.dp_reg()
     elif loss_function == 'diff_abs':
-        criterion = loss_functions.diff_abs_reg()
+        criterion = custom_loss_functions.diff_abs_reg()
     elif loss_function == 'wasserstein':
-        criterion = loss_functions.wasserstein_reg()
+        criterion = custom_loss_functions.wasserstein_reg()
     elif loss_function == 'KL_divergence':
-        criterion = loss_functions.KL_divergence_reg()
+        criterion = custom_loss_functions.KL_divergence_reg()
     elif loss_function == 'diff_quadr':
-        criterion = loss_functions.diff_quadr_reg()
+        criterion = custom_loss_functions.diff_quadr_reg()
     elif loss_function == 'histogram':
-        criterion = loss_functions.histogram_reg()
+        criterion = custom_loss_functions.histogram_reg()
     elif loss_function == 'histogram_sq':
-        criterion = loss_functions.histogram_sq_reg()
+        criterion = custom_loss_functions.histogram_sq_reg()
     elif loss_function == 'BCE':
         criterion = torch.nn.BCELoss()
     else:
         print('No correct loss function given, defaulted to binary cross entropy')
+        loss_function = 'BCE'
         criterion = torch.nn.BCELoss()
+    
+    #if fair loss we also use bce as balance
+    criterion_bce = torch.nn.BCELoss()
 
     #! decide if we want to use NAdam or not, check what state of art is now
 
     # Optimizer and scheduler used by benchmark
     optimizer = torch.optim.NAdam(model.parameters(), lr=learning_rate)
     lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.5, patience=16, threshold=0.0001,
+        optimizer, mode='min', factor=0.75, patience=10, threshold=0.01,
         threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08
     )
 
-    # Move data to device
-    X_train, y_train = X_train.to(device), y_train.to(device)
+    # Create DataLoader for training
+    train_dataset = TensorDataset(X_train, y_train, s_train)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+
+    # Create DataLoader for validation if data is provided
+    if X_val is not None and y_val is not None and s_val is not None:
+        val_dataset = TensorDataset(X_val, y_val, s_val)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)    
 
     # Early stopping variables
     best_val_loss = np.inf
@@ -87,62 +99,88 @@ def train_and_return_LSTM(X_train, y_train, loss_function,
         # Set model to training mode each epoch
         model.train()
 
-        # Forward pass
-        outputs = model(X_train)
-        
-        # Adjust y_train shape if needed for loss function compatibility
-        #y_train = y_train.unsqueeze(-1)
+        epoch_loss = 0.0
 
-        # Zero gradients, compute loss, backward pass, and optimize
-        optimizer.zero_grad()
-        loss = criterion(outputs, y_train)
-        loss.backward()
-        optimizer.step()
+        # Training loop over each batch
+        for X_batch, y_batch, s_batch in train_loader:
+            X_batch, y_batch, s_batch = X_batch.to(device), y_batch.to(device), s_batch.to(device)
 
-        # Track loss and adjust learning rate as needed
-        losses.append(loss.item())
+            # Forward pass
+            outputs = model(X_batch)
+            optimizer.zero_grad()
+            
+            # Calculate loss
+            if loss_function == 'BCE':
+                loss = criterion(outputs, y_batch)
+            else:
+                #! change when cleaned up functions
+                fair_loss, _, _, _ = criterion(outputs, s_batch, y_batch, 0.0, 1.0)
+                bce_loss = criterion_bce(outputs, y_batch)
+                loss = (1.0 - balance_fair_BCE) * bce_loss + balance_fair_BCE * fair_loss
 
-        # Validation step (only if validation data is provided)
+            # Backward pass and optimize
+            loss.backward()
+            optimizer.step()
+
+            epoch_loss += loss.item()
+
+        # Track average epoch loss
+        avg_train_loss = epoch_loss / len(train_loader)
+        losses.append(avg_train_loss)
+
+
+        # Validation step if validation data is provided
         if X_val is not None and y_val is not None:
-            model.eval()  # Set model to evaluation mode
+            model.eval()
+            val_epoch_loss = 0.0
             with torch.no_grad():
-                val_outputs = model(X_val)
-                val_loss = criterion(val_outputs, y_val)
-                val_losses.append(val_loss.item())
+                for X_val_batch, y_val_batch, s_val_batch in val_loader:
+                    X_val_batch, y_val_batch, s_val_batch = X_val_batch.to(device), y_val_batch.to(device), s_val_batch.to(device)
+                    val_outputs = model(X_val_batch)
+                    
+                    # Calculate validation loss
+                    if loss_function == 'BCE':
+                        val_loss = criterion(val_outputs, y_val_batch)
+                    else:
+                        #! change when cleaned up functions
+                        fair_val_loss, _, _, _ = criterion(val_outputs, s_val_batch, y_val_batch, 0.0, 1.0)
+                        bce_val_loss = criterion_bce(val_outputs, y_val_batch)
+                        val_loss = (1.0 - balance_fair_BCE) * bce_val_loss + balance_fair_BCE * fair_val_loss
+                    
+                    val_epoch_loss += val_loss.item()
+            
+            avg_val_loss = val_epoch_loss / len(val_loader)
+            val_losses.append(avg_val_loss)
 
-                # Check if validation loss improved
-                if val_loss < best_val_loss:
-                    best_val_loss = val_loss
-                    epochs_without_improvement = 0  # Reset patience counter
-                    # Save the current model's state as the best model
-                    best_model_state = model.state_dict()
-                else:
-                    epochs_without_improvement += 1
+            # Check for improvement in validation loss
+            if avg_val_loss < best_val_loss:
+                best_val_loss = avg_val_loss
+                epochs_without_improvement = 0
+                best_model_state = model.state_dict()
+            else:
+                epochs_without_improvement += 1
 
-                # Check for early stopping
-                if epochs_without_improvement >= patience:
-                    print(f"Early stopping at epoch {epoch+1}, no improvement in validation loss.")
-                    break
+            # Early stopping
+            if epochs_without_improvement >= patience:
+                print(f"Early stopping at epoch {epoch+1}, no improvement in validation loss.")
+                break
 
-        lr_scheduler.step(loss)
+        lr_scheduler.step(avg_train_loss)
 
-        # Print progress every 10 epochs
+        # Print progress
         if (epoch + 1) % 10 == 0:
-            print(f"Epoch [{epoch+1}/{max_epochs}], Loss: {loss.item():.4f}")
+            print(f"Epoch [{epoch+1}/{max_epochs}], Loss: {avg_train_loss:.4f}")
             if X_val is not None and y_val is not None:
-                print(f"Validation Loss: {val_loss.item():.4f}")
-            # Print learning rate
+                print(f"Validation Loss: {avg_val_loss:.4f}")
             print(f"Learning rate: {optimizer.param_groups[0]['lr']:.6f}")
         
-    # After training, load the model with the best validation loss
+    # Load the best model state
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
-
-    # Set model to evaluation mode before returning
+    
     model.eval()
 
-    if get_history == True:
+    if get_history:
         return model, losses, val_losses
     else:
         return model
-    
