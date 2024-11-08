@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 #todo do we need batchnorm?
 
@@ -42,7 +43,7 @@ class LSTM_Model(nn.Module):
         #self.bn = nn.BatchNorm1d(self.lstm_size)
         self.dense = nn.Linear(self.lstm_size, 1)
 
-    def forward(self, inputs):
+    def forward(self, inputs, sequence_lengths):
  
         #! we assume integer ecoding
         # Assume `inputs` has shape (batch_size, seq_len, total_num_features)
@@ -62,18 +63,25 @@ class LSTM_Model(nn.Module):
         #Apply dropout
         x = self.dropout_layer(combined_inputs)
 
-        # Pass the combined inputs through the LSTM
-        lstm_out, _ = self.lstm(x)  # Output shape (batch_size, seq_len, lstm_size)
+        # Pack the sequence for masking
+        packed_input = pack_padded_sequence(x, sequence_lengths.cpu(), batch_first=True, enforce_sorted=False)
+
+        # Pass the combined packed inputs through the LSTM
+        packed_output, _ = self.lstm(packed_input)
+
+        # Unpack sequence
+        lstm_out, _ = pad_packed_sequence(packed_output, batch_first=True, total_length=seq_len)
 
         # Take the last output for classification or regression
-        lstm_out = lstm_out[:, -1, :]  # (batch_size, lstm_size) - last timestep's output for each sequence
+        #last_outputs = lstm_out[:, -1, :]  # (batch_size, lstm_size) - last timestep's output for each sequence
+        last_outputs = lstm_out[torch.arange(batch_size), sequence_lengths - 1]
 
         # Apply batch normalization
         #!if we do also need to permute and re permute afterwards .permute(0, 2, 1)
         #lstm_out = self.bn(lstm_out)
 
-        # Final dense layer to get output
-        output = self.dense(lstm_out)
+        # Apply final dense layer and sigmoid activation
+        output = self.dense(last_outputs)
         output = torch.sigmoid(output)
 
         return output
