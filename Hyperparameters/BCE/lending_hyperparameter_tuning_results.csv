@@ -1,0 +1,2 @@
+num_layers,bidirectional,lstm_size,batch_size,learning_rate,dropout,auc_score
+1,False,16,128,0.0001,0.2,0.7142887896893512

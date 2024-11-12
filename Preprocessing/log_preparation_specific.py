@@ -6,11 +6,8 @@ from sklearn.preprocessing import MinMaxScaler
 
 import numpy as np
 
-#! add sensitive parameter extractor
-
 #! add settings other log types
 
-#! ADD ORDER DATAFERAME SOMEWHERE?
 
 # Define for the used event logs, which are categorical, which are numerical and change order etc.
 def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiation_set = False, validation_fraction=0.1, act_label = 'concept:name', case_id='case:concept:name', sensitive_column = 'case:gender', drop_sensitive=False):
@@ -21,6 +18,10 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     if log_name == "hiring":
         #add outcome label
         df = add_label(df, "hiring", act_label, case_id)
+
+        #REMOVE EVENT THAT COME AFTER THE OUTCOME EVENT
+        df = df[df['valid_for_prefix'] == 1]
+
         #order features
         df, num_numerical_features, true_num_feature_list = clean_order_features(df, "hiring")
         #encode features
@@ -30,6 +31,10 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     elif log_name == "hospital":
         #add outcome label
         df = add_label(df, "hospital", act_label, case_id)
+
+        #REMOVE EVENT THAT COME AFTER THE OUTCOME EVENT
+        df = df[df['valid_for_prefix'] == 1]
+
         #order features
         df, num_numerical_features, true_num_feature_list  = clean_order_features(df, "hospital")
         #encode features
@@ -39,6 +44,10 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     elif log_name == "lending":
         #add outcome label
         df = add_label(df, "lending", act_label, case_id)
+
+        #REMOVE EVENT THAT COME AFTER THE OUTCOME EVENT
+        df = df[df['valid_for_prefix'] == 1]
+
         #order features
         df, num_numerical_features, true_num_feature_list  = clean_order_features(df, "lending")
         #encode features
@@ -48,6 +57,10 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     elif log_name == "renting":
         #add outcome label
         df = add_label(df, "renting", act_label, case_id)
+
+        #REMOVE EVENT THAT COME AFTER THE OUTCOME EVENT
+        df = df[df['valid_for_prefix'] == 1]
+
         #order features
         df, num_numerical_features, true_num_feature_list  = clean_order_features(df, "renting")
         #encode features
@@ -123,7 +136,7 @@ def add_label(df, log_name, act_label = 'concept:name', case_id='case:concept:na
     elif log_name == "renting":
         #! we probably need to delete all events after sign contract
         #we define the outcome based on whether the contract is signed or proscpective tenant is rejected
-        print(f'Preprocess {log_name} type event log, with outcome defined on presence of sign loan agreement')
+        print(f'Preprocess {log_name} type event log, with outcome defined on presence of sign contract')
         new_df = add_label_activity_presence(df, act_label, case_id, 'Sign Contract')
     else:
         #todo: delete names of logs we didn't use
@@ -133,19 +146,34 @@ def add_label(df, log_name, act_label = 'concept:name', case_id='case:concept:na
 
 def add_label_activity_presence(df, act_label, case_id, outcome_act):
     '''
-    Add a new column to the DataFrame indicating whether each row's case ID matches the specified outcome action label.
+    Add a new column to the DataFrame indicating whether each row's case ID matches the specified outcome action label,
+    and include only activities up to but not including the first occurrence of the outcome action.
+    
     Params:
     - df: DataFrame containing the data
     - act_label: Column name for the action label
     - case_id: Column name for the case ID
     - outcome_act: Value of the outcome action
+    
     Returns:
-    - DataFrame with the additional 'outcome' column
+    - DataFrame with additional 'outcome' and 'valid_for_prefix' columns
     '''
     # Identify case IDs where act_label is equal to outcome_act
     outcome_cases = df.loc[df[act_label] == outcome_act, case_id].unique()
     # Add a new 'outcome' column where the value is 1 if case_id is in outcome_cases, otherwise 0
     df['outcome'] = df[case_id].apply(lambda x: 1 if x in outcome_cases else 0)
+
+    # Initialize 'valid_for_prefix' to mark activities before the outcome event in each case
+    df['valid_for_prefix'] = 1  # Initialize all as valid initially
+
+    # Iterate through each case and mark activities up to the first outcome event
+    for case in outcome_cases:
+        outcome_index = df[(df[case_id] == case) & (df[act_label] == outcome_act)].index
+        if not outcome_index.empty:
+            first_outcome_index = outcome_index[0]
+            # Mark only activities before the first outcome event as valid
+            df.loc[(df[case_id] == case) & (df.index >= first_outcome_index), 'valid_for_prefix'] = 0
+
     return df
 
 def clean_order_features(df, log_name):
@@ -162,6 +190,33 @@ def clean_order_features(df, log_name):
         #we add the case id in case we need it later again
         cols_order_filtered = categorical_features + binary_features + num_features + ['case:concept:name', 'outcome']
         df = df[cols_order_filtered]
+
+    elif log_name == "hospital":
+        #! we delete time for now
+        categorical_features = ['concept:name', 'resource']
+        binary_features = ['case:german speaking', 'case:private_insurance', 'case:underlying_condition', 'case:gender', 'case:citizen', 'protected']
+        num_features = ['case:age']
+        num_numerical_features = len(binary_features) + len(num_features)
+        for col in binary_features:
+            #convert to integers instead of booleans
+            df[col] = df[col].astype(int)
+        #we add the case id in case we need it later again
+        cols_order_filtered = categorical_features + binary_features + num_features + ['case:concept:name', 'outcome']
+        df = df[cols_order_filtered]
+   
+
+    elif log_name == "lending":
+        #! we delete time for now
+        categorical_features = ['concept:name', 'resource']
+        binary_features = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected']
+        num_features = ['case:age', 'case:yearsOfEducation', 'case:CreditScore']
+        num_numerical_features = len(binary_features) + len(num_features)
+        for col in binary_features:
+            #convert to integers instead of booleans
+            df[col] = df[col].astype(int)
+        #we add the case id in case we need it later again
+        cols_order_filtered = categorical_features + binary_features + num_features + ['case:concept:name', 'outcome']
+        df = df[cols_order_filtered]
     
     else:
         #todo: delete names of logs we didn't use
@@ -171,13 +226,6 @@ def clean_order_features(df, log_name):
     return df, num_numerical_features, num_features 
 
 '''
-    elif log_name == "hospital":
-        # todo!
-   
-
-    elif log_name == "lending":
-        # todo!
-        new_df = df
 
     elif log_name == "renting":
         # todo!

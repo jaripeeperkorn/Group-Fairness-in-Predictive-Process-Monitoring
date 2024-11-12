@@ -57,8 +57,13 @@ def get_best_hyperparameter_combination(logname):
         return None
 
 
-def run_sensitive_check(dataset_name, logname):
-    binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:religious']
+def run_sensitive_check(dataset_name, logname, max_prefix_length):
+    if logname == 'hiring':
+        binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:religious']
+    elif logname == 'hospital':
+        binarys = ['case:german speaking', 'case:private_insurance', 'case:underlying_condition', 'case:gender', 'case:citizen', 'protected']
+    elif logname == 'lending':
+        binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected']
     log = imp.import_xes(dataset_name)
 
     tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features = prepare.prepare_log(
@@ -90,7 +95,7 @@ def run_sensitive_check(dataset_name, logname):
         lstm_size=hyperparams['lstm_size'], 
         num_lstm=hyperparams['num_layers'], 
         bidirectional=hyperparams['bidirectional'], 
-        max_length=8, 
+        max_length=max_prefix_length, 
         learning_rate=hyperparams['learning_rate'], 
         max_epochs=300, 
         batch_size=hyperparams['batch_size'], 
@@ -139,4 +144,8 @@ def run_sensitive_check(dataset_name, logname):
     results_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
-run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring')
+run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 8)
+
+run_sensitive_check('Datasets/hospital_log_high.xes', 'hospital', 5)
+
+run_sensitive_check('Datasets/lending_log_high.xes', 'lending', 5)

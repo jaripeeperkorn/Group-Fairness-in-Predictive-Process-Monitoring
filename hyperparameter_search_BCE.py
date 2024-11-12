@@ -13,7 +13,7 @@ import os
 
 
 # Main hyperparameter tuning function
-def run_hyper(dataset_name, logname):
+def run_hyper(dataset_name, logname, max_prefix_len):
     # Log setup
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -39,8 +39,8 @@ def run_hyper(dataset_name, logname):
     bidirectional_lst = [False, True]
     LSTM_size_lst = [16, 32, 64]
     batch_size_lst = [128] #we need a large size anyway later
-    learning_rate_lst = [0.0001, 0.001, 0.01]
-    dropout_lst = [0.0, 0.2, 0.4]
+    learning_rate_lst = [0.0001, 0.001]
+    dropout_lst = [0.2, 0.4]
 
 
     # Generate all combinations of hyperparameters
@@ -89,7 +89,7 @@ def run_hyper(dataset_name, logname):
             batch_size=batch_size, 
             learning_rate=learning_rate, 
             dropout=dropout, 
-            max_length=8, 
+            max_length=max_prefix_len, 
             max_epochs=300, 
             patience=20, 
             X_val=X_val, 
@@ -172,4 +172,8 @@ def evaluate_model(model, X_val, y_val, seq_len_val):
     return auc
 
 
-run_hyper('Datasets/hiring_log_high.xes', 'hiring')
+run_hyper('Datasets/hiring_log_high.xes', 'hiring', 8)
+
+run_hyper('Datasets/lending_log_high.xes', 'lending', 5)
+
+#run_hyper('Datasets/hospital_log_high.xes', 'hospital', 5)
