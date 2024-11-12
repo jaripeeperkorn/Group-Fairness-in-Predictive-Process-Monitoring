@@ -9,6 +9,8 @@ from itertools import product
 import logging
 import torch
 
+import os
+
 
 # Main hyperparameter tuning function
 def run_hyper(dataset_name, logname):
@@ -42,13 +44,32 @@ def run_hyper(dataset_name, logname):
 
 
     # Generate all combinations of hyperparameters
-    hyperparameter_combinations = product(num_layers_lst, bidirectional_lst, LSTM_size_lst, batch_size_lst, 
-                                           learning_rate_lst, dropout_lst)
+    hyperparameter_combinations = list(product(num_layers_lst, bidirectional_lst, LSTM_size_lst, batch_size_lst, 
+                                               learning_rate_lst, dropout_lst))
     
-    # List to store results
-    results = []
+    # Check for existing results file
+    results_path = f"Hyperparameters/BCE/{logname}_hyperparameter_tuning_results.csv"
+    if os.path.exists(results_path):
+        # Load existing results
+        existing_results_df = pd.read_csv(results_path)
+        # Extract completed hyperparameter combinations to skip
+        completed_combinations = set(
+            tuple(row) for row in existing_results_df[['num_layers', 'bidirectional', 'lstm_size', 
+                                                       'batch_size', 'learning_rate', 'dropout']].itertuples(index=False, name=None)
+        )
+    else:
+        # Initialize an empty DataFrame if results file doesn't exist
+        existing_results_df = pd.DataFrame(columns=['num_layers', 'bidirectional', 'lstm_size', 'batch_size', 
+                                                    'learning_rate', 'dropout', 'auc_score'])
+        completed_combinations = set()
+    
+    # List to store new results
+    new_results = []
 
-    for combination in hyperparameter_combinations:
+    # Filter out completed combinations
+    combinations_to_run = [comb for comb in hyperparameter_combinations if comb not in completed_combinations]
+
+    for combination in combinations_to_run:
         num_layers, bidirectional, lstm_size, batch_size, learning_rate, dropout = combination
         
         logging.info(f"Training with hyperparameters: {combination}")
@@ -83,8 +104,8 @@ def run_hyper(dataset_name, logname):
         # Log results
         logging.info(f"AUC for {combination}: {auc}")
         
-        # Save hyperparameters and AUC to results list
-        results.append({
+        # Save hyperparameters and AUC to new_results list
+        new_results.append({
             'num_layers': num_layers,
             'bidirectional': bidirectional,
             'lstm_size': lstm_size,
@@ -94,17 +115,16 @@ def run_hyper(dataset_name, logname):
             'auc_score': auc
         })
 
-        results_df = pd.DataFrame(results)
-        # Save results to CSV
-        results_df.to_csv(logname+'_hyperparameter_tuning_results.csv', index=False)
+        # Save intermediate results to CSV after each iteration
+        temp_results_df = pd.DataFrame(new_results)
+        results_df = pd.concat([existing_results_df, temp_results_df], ignore_index=True)
+        results_df.to_csv(results_path, index=False)
+
+    # Final save of all results to CSV
+    results_df = pd.concat([existing_results_df, pd.DataFrame(new_results)], ignore_index=True)
+    results_df.to_csv(results_path, index=False)
     
-    # Convert results to a pandas DataFrame
-    results_df = pd.DataFrame(results)
-    
-    # Save results to CSV
-    results_df.to_csv(logname+'_hyperparameter_tuning_results.csv', index=False)
-    
-    # Return the results DataFrame (optional)
+    # Return the final results DataFrame (optional)
     return results_df
 
 def initialize_model(X_train, seq_len_train, y_train, s_train, vocab_sizes, num_numerical_features, 

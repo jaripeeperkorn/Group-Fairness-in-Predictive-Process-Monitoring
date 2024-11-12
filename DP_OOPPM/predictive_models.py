@@ -41,17 +41,23 @@ class LSTM_Model(nn.Module):
         self.dropout_layer = nn.Dropout(self.dropout)
         self.lstm = nn.LSTM(input_size=self.total_num_features_after_emb, hidden_size=self.lstm_size, num_layers=self.num_lstm, batch_first=True, bidirectional=bidirectional)
         #self.bn = nn.BatchNorm1d(self.lstm_size)
-        self.dense = nn.Linear(self.lstm_size, 1)
+
+        # Dense layer
+        # Adjust the input size based on the bidirectionality of the LSTM
+        lstm_output_size = self.lstm_size * (2 if self.bidirectional else 1)
+        self.dense = nn.Linear(lstm_output_size, 1)
 
     def forward(self, inputs, sequence_lengths):
+
+        device = inputs.device  # Use the device of `inputs`
  
         #! we assume integer ecoding
         # Assume `inputs` has shape (batch_size, seq_len, total_num_features)
         batch_size, seq_len, _ = inputs.size()
 
         # Separate categorical and numerical features at each timestep
-        categorical_inputs = inputs[:, :, :len(self.vocab_sizes)].long()
-        numerical_inputs = inputs[:, :, len(self.vocab_sizes):].long()  # Remaining part for numerical features
+        categorical_inputs = inputs[:, :, :len(self.vocab_sizes)].long().to(device)
+        numerical_inputs = inputs[:, :, len(self.vocab_sizes):].float().to(device)  # Remaining part for numerical features
 
         # Embed each categorical feature separately for each timestep and concatenate embeddings
         embeddings = [emb_layer(categorical_inputs[:, :, i]) for i, emb_layer in enumerate(self.emb_layers)]

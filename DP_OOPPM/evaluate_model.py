@@ -18,12 +18,4 @@ def get_evaluation(y_gt, y_pred, s, binary_threshold = 0.5):
     abpc = custom_metrics.ABPC(y_pred, y_gt, s)
     abcc = custom_metrics.ABCC(y_pred, y_gt, s)
 
-    print("Accuracy at threshold: ", accuracy)
-    print("Precision at theshold: ", precision)
-    print("Recall at theshold: ", recall)
-    print("AUC: ", auc)
-
-    print("DP with threshold: ", dp)
-    print("DP no threshold: ", dpe)
-    print("ABPC: ", abpc)
-    print("ABCC", abcc)
+    return {"accuracy": accuracy, "auc": auc, "precision": precision, "recall": recall, "dp": dp, "dpe": dpe, "abpc": abpc, "abcc": abcc}
