@@ -82,8 +82,6 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     te_old_shape = te[true_num_feature_list].shape
     te[true_num_feature_list] = scaler.transform(te[true_num_feature_list].to_numpy().reshape(-1,1)).reshape(te_old_shape)
 
-    # todo add possiblitiy validation set split here?
-
 
     #in this function the case_ID is droppend anyway
     trval_X, trval_y, trval_s, updated_max_prefix_length = get_prefix_label_pairs.create_pairs_train_sensitive(df=tr, max_prefix_length=max_prefix_len, sensitive_column=sensitive_column, drop_sensitive=drop_sensitive, case_id=case_id, outcome='outcome')
@@ -127,8 +125,8 @@ def add_label(df, log_name, act_label = 'concept:name', case_id='case:concept:na
     elif log_name == "hospital":
         #! double check whether there are sets where both are present
         #we define the outcome based on whether treatment unsuccesful or treatment unsuccesful is initially reached
-        print(f'Preprocess {log_name} type event log, with outcome defined on presence of treatment succesful')
-        new_df = add_label_activity_presence(df, act_label, case_id, 'Treatment succesful')
+        print(f'Preprocess {log_name} type event log, with outcome defined on presence of treatment unsuccesful, even if succesful aftewards')
+        new_df = add_label_activity_presence(df, act_label, case_id, 'Treatment unsuccesful')
     elif log_name == "lending":
         #we define the outcome based on whether the loan agreement is signed
         print(f'Preprocess {log_name} type event log, with outcome defined on presence of sign loan agreement')
@@ -217,6 +215,20 @@ def clean_order_features(df, log_name):
         #we add the case id in case we need it later again
         cols_order_filtered = categorical_features + binary_features + num_features + ['case:concept:name', 'outcome']
         df = df[cols_order_filtered]
+
+    elif log_name == "renting":
+        #! we delete time for now
+        categorical_features = ['concept:name', 'resource']
+        binary_features = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:married']
+        num_features = ['case:age', 'case:yearsOfEducation']
+        num_numerical_features = len(binary_features) + len(num_features)
+        for col in binary_features:
+            #convert to integers instead of booleans
+            df[col] = df[col].astype(int)
+        #we add the case id in case we need it later again
+        cols_order_filtered = categorical_features + binary_features + num_features + ['case:concept:name', 'outcome']
+        df = df[cols_order_filtered]
+
     
     else:
         #todo: delete names of logs we didn't use
@@ -225,13 +237,7 @@ def clean_order_features(df, log_name):
     #we also return list of true numericals to know which to minmaxscale
     return df, num_numerical_features, num_features 
 
-'''
 
-    elif log_name == "renting":
-        # todo!
-        new_df = df
-    '''
-    
 
 def encode_features(df, log_name):
     voc_sizes = []

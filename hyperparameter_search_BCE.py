@@ -13,7 +13,7 @@ import os
 
 
 # Main hyperparameter tuning function
-def run_hyper(dataset_name, logname, max_prefix_len):
+def run_hyper(dataset_name, logname, max_prefix_len, addendum):
     # Log setup
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -38,7 +38,7 @@ def run_hyper(dataset_name, logname, max_prefix_len):
     num_layers_lst = [1, 2]
     bidirectional_lst = [False, True]
     LSTM_size_lst = [16, 32, 64]
-    batch_size_lst = [128] #we need a large size anyway later
+    batch_size_lst = [128, 256, 512] #we need a large size anyway later
     learning_rate_lst = [0.0001, 0.001]
     dropout_lst = [0.2, 0.4]
 
@@ -48,7 +48,7 @@ def run_hyper(dataset_name, logname, max_prefix_len):
                                                learning_rate_lst, dropout_lst))
     
     # Check for existing results file
-    results_path = f"Hyperparameters/BCE/{logname}_hyperparameter_tuning_results.csv"
+    results_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     if os.path.exists(results_path):
         # Load existing results
         existing_results_df = pd.read_csv(results_path)
@@ -172,8 +172,23 @@ def evaluate_model(model, X_val, y_val, seq_len_val):
     return auc
 
 
-run_hyper('Datasets/hiring_log_high.xes', 'hiring', 8)
+#run_hyper('Datasets/lending_log_high.xes', 'lending', 5, 'high')
 
-run_hyper('Datasets/lending_log_high.xes', 'lending', 5)
+#run_hyper('Datasets/lending_log_medium.xes', 'lending', 5, 'medium')
 
-#run_hyper('Datasets/hospital_log_high.xes', 'hospital', 5)
+#run_hyper('Datasets/lending_log_low.xes', 'lending', 5, 'low')
+
+
+#run_hyper('Datasets/hiring_log_high.xes', 'hiring', 8, 'high')
+
+#run_hyper('Datasets/hiring_log_medium.xes', 'hiring', 8, 'medium')
+
+#run_hyper('Datasets/hiring_log_low.xes', 'hiring', 8, 'low')
+
+
+run_hyper('Datasets/renting_log_high.xes', 'renting', 4, 'high')
+
+run_hyper('Datasets/renting_log_medium.xes', 'renting', 4, 'medium')
+
+run_hyper('Datasets/renting_log_low.xes', 'renting', 4, 'low')
+

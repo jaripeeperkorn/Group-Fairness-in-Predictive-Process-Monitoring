@@ -4,32 +4,48 @@ import torch
 
 from statsmodels.distributions.empirical_distribution import ECDF
 
-def demographic_parity(y_pred, z_values, threshold=0.5):
+def demographic_parity(y_pred, z_values, threshold=None):
+    """
+    Computes the demographic parity between two groups in predicted outcomes.
 
-    # Extract the predicted values for each group and apply the threshold if it is not None
+    Parameters:
+    - y_pred (array-like): Predicted values, typically probabilities or binary predictions.
+    - z_values (array-like): Binary group indicators (e.g., 0 or 1) for each corresponding prediction in y_pred.
+    - threshold (float, optional): Threshold value for binarizing predictions. If provided, predictions are
+                                   classified as 1 if above the threshold, otherwise 0. If None, raw predictions are used.
+
+    Returns:
+    - float: The absolute difference in mean predictions between the two groups, representing demographic parity.
+    """
+    
+    # Step 1: Separate predictions by group, applying the threshold if specified
+    # - For the group with z_values == 1, apply the threshold (if given) or keep raw predictions
     y_z_1 = y_pred[z_values == 1] > threshold if threshold else y_pred[z_values == 1]
+    # - For the group with z_values == 0, apply the threshold (if given) or keep raw predictions
     y_z_0 = y_pred[z_values == 0] > threshold if threshold else y_pred[z_values == 0]
 
-    # Compute the absolute difference between the mean predicted value for each group
+    # Step 2: Compute the mean prediction for each group
+    # - Average prediction for group z == 1
     y_z_1_mean = y_z_1.mean()
+    # - Average prediction for group z == 0
     y_z_0_mean = y_z_0.mean()
+
+    # Step 3: Calculate demographic parity as the absolute difference between group means
     parity = abs(y_z_1_mean - y_z_0_mean)
 
-    # Return the computed demographic parity value
+    # Step 4: Return the demographic parity value
     return parity
 
 
 # Define a function named ABPC that takes in four arguments:
 # y_pred: predicted values
-# y_gt: ground truth values
 # z_values: binary values indicating the group membership of each sample
 # bw_method: bandwidth method for the kernel density estimation (default is "scott")
-# sample_n: number of samples to generate for the integration (default is 5000)
-def ABPC( y_pred, y_gt, z_values, bw_method = "scott", sample_n = 5000 ):
+# sample_n: number of samples to generate for the integration (default is 10000)
+def ABPC(y_pred, z_values, bw_method = "scott", sample_n = 10000):
 
     # Flatten the input arrays
     y_pred = y_pred.ravel()
-    y_gt = y_gt.ravel()
     z_values = z_values.ravel()
 
     # Extract the predicted values for each group
@@ -56,14 +72,12 @@ def ABPC( y_pred, y_gt, z_values, bw_method = "scott", sample_n = 5000 ):
 
 # Define a function named ABCC that takes in three arguments:
 # y_pred: predicted values
-# y_gt: ground truth values
 # z_values: binary values indicating the group membership of each sample
 # sample_n: number of samples to generate for the integration (default is 10000)
-def ABCC( y_pred, y_gt, z_values, sample_n = 10000 ):
+def ABCC(y_pred, z_values, sample_n = 10000):
 
     # Flatten the input arrays
     y_pred = y_pred.ravel()
-    y_gt = y_gt.ravel()
     z_values = z_values.ravel()
 
     # Extract the predicted values for each group

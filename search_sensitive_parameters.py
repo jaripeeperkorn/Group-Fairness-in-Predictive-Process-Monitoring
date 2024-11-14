@@ -3,19 +3,19 @@ import Preprocessing.log_preparation_specific as prepare
 import Preprocessing.list_to_tensor as convert
 import DP_OOPPM.train_model as train_model
 import DP_OOPPM.evaluate_model as ev
+import DP_OOPPM.plot_curves as plot_curves
 
 import pandas as pd
 import numpy as np
 
-from itertools import product
-import logging
+
 import torch
 
 import os
 
 #code to find the sensitive parmeter for which the DP and other measures is the highest
 
-def get_best_hyperparameter_combination(logname):
+def get_best_hyperparameter_combination(logname, addendum):
     """
     Load the hyperparameter tuning log and return the best hyperparameter combination based on AUC score.
     
@@ -26,7 +26,7 @@ def get_best_hyperparameter_combination(logname):
         dict: The best hyperparameter combination and its corresponding AUC score.
     """
     # Define the log file path
-    log_path = f"Hyperparameters/BCE/{logname}_hyperparameter_tuning_results.csv"
+    log_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     
     try:
         # Load the log data
@@ -57,7 +57,7 @@ def get_best_hyperparameter_combination(logname):
         return None
 
 
-def run_sensitive_check(dataset_name, logname, max_prefix_length):
+def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     if logname == 'hiring':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:religious']
     elif logname == 'hospital':
@@ -81,7 +81,7 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length):
     y_val = convert.list_to_tensor(val_y).view(-1, 1)
     s_val = convert.list_to_tensor(val_s)
 
-    hyperparams = get_best_hyperparameter_combination(logname)
+    hyperparams = get_best_hyperparameter_combination(logname, addendum)
 
     model = train_model.train_and_return_LSTM(
         X_train=X_train, 
@@ -99,7 +99,7 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length):
         learning_rate=hyperparams['learning_rate'], 
         max_epochs=300, 
         batch_size=hyperparams['batch_size'], 
-        patience=30, 
+        patience=50, 
         get_history=False, 
         X_val=X_val, 
         seq_len_val=seq_len_val, 
@@ -138,14 +138,28 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length):
         # Append the result to the list
         results_list.append(result)
 
+        plot_filename = f"Sensitive_parameter_results/figs/{logname}_{addendum}_{sensitive}_plot.pdf"
+        plot_filename = plot_filename.replace(" ", "").replace(":", "")
+
+        plot_curves.plot_curves(te_np, s_te, sensitive, plot_filename)
+
+
     # Convert the results list to a DataFrame and save to CSV
     results_df = pd.DataFrame(results_list)
-    output_path = f"Sensitive_parameter_results/{logname}_sensitive_evaluation_results.csv"
+    output_path = f"Sensitive_parameter_results/{logname}_{addendum}_sensitive_evaluation_results.csv"
     results_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
-run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 8)
+run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 8, 'high')
 
-run_sensitive_check('Datasets/hospital_log_high.xes', 'hospital', 5)
+run_sensitive_check('Datasets/hiring_log_medium.xes', 'hiring', 8, 'medium')
 
-run_sensitive_check('Datasets/lending_log_high.xes', 'lending', 5)
+run_sensitive_check('Datasets/hiring_log_low.xes', 'hiring', 8, 'low')
+
+run_sensitive_check('Datasets/lending_log_high.xes', 'lending', 5, 'high')
+
+run_sensitive_check('Datasets/lending_log_medium.xes', 'lending', 5,  'medium')
+
+run_sensitive_check('Datasets/lending_log_low.xes', 'lending', 5,  'low')
+
+#run_sensitive_check('Datasets/hospital_log_high.xes', 'hospital', 5)

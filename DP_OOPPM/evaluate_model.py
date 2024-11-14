@@ -13,9 +13,9 @@ def get_evaluation(y_gt, y_pred, s, binary_threshold = 0.5):
     precision = precision_score(y_gt, y_pred > binary_threshold) #* 100
     recall = recall_score(y_gt, y_pred > binary_threshold) #* 100
 
-    dp = custom_metrics.demographic_parity(y_pred, s)
+    dp = custom_metrics.demographic_parity(y_pred, s, threshold=0.5)
     dpe = custom_metrics.demographic_parity(y_pred, s, threshold=None)
-    abpc = custom_metrics.ABPC(y_pred, y_gt, s)
-    abcc = custom_metrics.ABCC(y_pred, y_gt, s)
+    abpc = custom_metrics.ABPC(y_pred, s)
+    abcc = custom_metrics.ABCC(y_pred, s)
 
     return {"accuracy": accuracy, "auc": auc, "precision": precision, "recall": recall, "dp": dp, "dpe": dpe, "abpc": abpc, "abcc": abcc}

@@ -1,6 +1,6 @@
 import pandas as pd
 
-def get_best_hyperparameter_combination(logname):
+def get_best_hyperparameter_combination(logname, addendum):
     """
     Load the hyperparameter tuning log and return the best hyperparameter combination based on AUC score.
     
@@ -11,7 +11,7 @@ def get_best_hyperparameter_combination(logname):
         dict: The best hyperparameter combination and its corresponding AUC score.
     """
     # Define the log file path
-    log_path = f"Hyperparameters/BCE/{logname}_hyperparameter_tuning_results.csv"
+    log_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     
     try:
         # Load the log data
@@ -42,7 +42,7 @@ def get_best_hyperparameter_combination(logname):
         return None
 
 
-def find_worst_hyperparameters(logname):
+def find_worst_hyperparameters(logname, addendum):
     """
     Load the hyperparameter tuning log and analyze which hyperparameter choices lead to the worst average AUC scores.
     
@@ -53,7 +53,7 @@ def find_worst_hyperparameters(logname):
         dict: A dictionary with each hyperparameter and its value that led to the worst average AUC score.
     """
     # Define the log file path
-    log_path = f"Hyperparameters/BCE/{logname}_hyperparameter_tuning_results.csv"
+    log_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     
     try:
         # Load the log data
@@ -102,9 +102,26 @@ def find_worst_hyperparameters(logname):
 
     
 
-best_combination = get_best_hyperparameter_combination('hiring')
+best_combination = get_best_hyperparameter_combination('hiring','high')
 
-print("BEST: ", best_combination)
+worst_hyperparameters = find_worst_hyperparameters('hiring','high')
 
+best_combination = get_best_hyperparameter_combination('hiring','medium')
 
-worst_hyperparameters = find_worst_hyperparameters('hiring')
+worst_hyperparameters = find_worst_hyperparameters('hiring','medium')
+
+best_combination = get_best_hyperparameter_combination('hiring','low')
+
+worst_hyperparameters = find_worst_hyperparameters('hiring','low')
+
+best_combination = get_best_hyperparameter_combination('lending','high')
+
+worst_hyperparameters = find_worst_hyperparameters('lending','high')
+
+best_combination = get_best_hyperparameter_combination('lending','medium')
+
+worst_hyperparameters = find_worst_hyperparameters('lending','medium')
+
+best_combination = get_best_hyperparameter_combination('lending','low')
+
+worst_hyperparameters = find_worst_hyperparameters('lending','low')
