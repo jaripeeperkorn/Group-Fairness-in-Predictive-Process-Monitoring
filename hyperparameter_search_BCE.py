@@ -1,6 +1,4 @@
-import Preprocessing.import_data as imp
-import Preprocessing.log_preparation_specific as prepare
-import Preprocessing.list_to_tensor as convert
+import Preprocessing.full_prep_pipeline as prepare
 import DP_OOPPM.train_model as train_model
 
 import pandas as pd
@@ -18,22 +16,10 @@ def run_hyper(dataset_name, logname, max_prefix_len, addendum):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Data Preparation
-    log = imp.import_xes(dataset_name)
-    tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features = prepare.prepare_log(
-        df=log, log_name=logname, max_prefix_len=8, test_fraction=0.2, 
-        return_valdiation_set=True, validation_fraction=0.2,
-        act_label='concept:name', case_id='case:concept:name', 
-        sensitive_column='case:gender', drop_sensitive=False)
+    X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, 
+                                                                                                                                                                                       max_prefix_len=max_prefix_len, drop_sensitive=False, 
+                                                                                                                                                                                       sensitive_column='case:gender')
     
-    # Convert data to tensors
-    X_train, seq_len_train = convert.nested_list_to_tensor(tr_X)
-    y_train = convert.list_to_tensor(tr_y).view(-1, 1)
-    s_train = convert.list_to_tensor(tr_s)
-
-    X_val, seq_len_val = convert.nested_list_to_tensor(val_X)
-    y_val = convert.list_to_tensor(val_y).view(-1, 1)
-    s_val = convert.list_to_tensor(val_s)
-
     # Hyperparameter grids
     num_layers_lst = [1, 2]
     bidirectional_lst = [False, True]
@@ -89,7 +75,7 @@ def run_hyper(dataset_name, logname, max_prefix_len, addendum):
             batch_size=batch_size, 
             learning_rate=learning_rate, 
             dropout=dropout, 
-            max_length=max_prefix_len, 
+            max_length=new_max_prefix_len,
             max_epochs=300, 
             patience=20, 
             X_val=X_val, 
@@ -164,7 +150,7 @@ def evaluate_model(model, X_val, y_val, seq_len_val):
     val_np = val_output.detach().cpu().numpy()
 
     # Get the ground truth and predictions
-    y_gt = y_val.ravel()
+    y_gt = y_val.numpy().ravel()
     y_pred = val_np.ravel()
 
     # Compute AUC score
@@ -172,23 +158,23 @@ def evaluate_model(model, X_val, y_val, seq_len_val):
     return auc
 
 
-#run_hyper('Datasets/lending_log_high.xes', 'lending', 5, 'high')
+run_hyper('Datasets/lending_log_high.xes', 'lending', 6, 'high')
 
-#run_hyper('Datasets/lending_log_medium.xes', 'lending', 5, 'medium')
+run_hyper('Datasets/lending_log_medium.xes', 'lending', 6, 'medium')
 
-#run_hyper('Datasets/lending_log_low.xes', 'lending', 5, 'low')
-
-
-#run_hyper('Datasets/hiring_log_high.xes', 'hiring', 8, 'high')
-
-#run_hyper('Datasets/hiring_log_medium.xes', 'hiring', 8, 'medium')
-
-#run_hyper('Datasets/hiring_log_low.xes', 'hiring', 8, 'low')
+run_hyper('Datasets/lending_log_low.xes', 'lending', 6, 'low')
 
 
-run_hyper('Datasets/renting_log_high.xes', 'renting', 4, 'high')
+run_hyper('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
 
-run_hyper('Datasets/renting_log_medium.xes', 'renting', 4, 'medium')
+run_hyper('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
 
-run_hyper('Datasets/renting_log_low.xes', 'renting', 4, 'low')
+run_hyper('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
+
+
+run_hyper('Datasets/renting_log_high.xes', 'renting', 6, 'high')
+
+run_hyper('Datasets/renting_log_medium.xes', 'renting', 6, 'medium')
+
+run_hyper('Datasets/renting_log_low.xes', 'renting', 6, 'low')
 

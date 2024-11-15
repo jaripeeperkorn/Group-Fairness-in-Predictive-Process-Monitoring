@@ -64,22 +64,12 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
         binarys = ['case:german speaking', 'case:private_insurance', 'case:underlying_condition', 'case:gender', 'case:citizen', 'protected']
     elif logname == 'lending':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected']
+    elif logname == 'renting':
+        binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:married']
     log = imp.import_xes(dataset_name)
 
-    tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features = prepare.prepare_log(
-        df=log, log_name=logname, max_prefix_len=8, test_fraction=0.2, 
-        return_valdiation_set=True, validation_fraction=0.2,
-        act_label='concept:name', case_id='case:concept:name', 
-        sensitive_column='case:gender', drop_sensitive=False)
-    
-    # Convert data to tensors
-    X_train, seq_len_train = convert.nested_list_to_tensor(tr_X)
-    y_train = convert.list_to_tensor(tr_y).view(-1, 1)
-    s_train = convert.list_to_tensor(tr_s)
-
-    X_val, seq_len_val = convert.nested_list_to_tensor(val_X)
-    y_val = convert.list_to_tensor(val_y).view(-1, 1)
-    s_val = convert.list_to_tensor(val_s)
+    X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, 
+                                                                                                                                                                                       drop_sensitive=False, sensitive_column='case:gender')
 
     hyperparams = get_best_hyperparameter_combination(logname, addendum)
 
@@ -95,7 +85,7 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
         lstm_size=hyperparams['lstm_size'], 
         num_lstm=hyperparams['num_layers'], 
         bidirectional=hyperparams['bidirectional'], 
-        max_length=max_prefix_length, 
+        max_length=new_max_prefix_len, 
         learning_rate=hyperparams['learning_rate'], 
         max_epochs=300, 
         batch_size=hyperparams['batch_size'], 
@@ -110,29 +100,29 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
+    #prepare valdiations et needed for optimal threshold
+    y_val_np = y_val.numpy()
+    X_val, seq_len_val = X_val.to(device), seq_len_val.to(device)
+    val_output = model(X_val, seq_len_val)
+    val_output_np = val_output.detach().cpu().numpy()
+    
+
     # Initialize an empty list to store results for each sensitive attribute
     results_list = []
 
     for sensitive in binarys:
-        _, _, _, _, _, _, te_X, te_y, te_s, _, _ = prepare.prepare_log(
-        df=log, log_name=logname, max_prefix_len=8, test_fraction=0.2, 
-        return_valdiation_set=True, validation_fraction=0.2,
-        act_label='concept:name', case_id='case:concept:name', 
-        sensitive_column=sensitive, drop_sensitive=False)
-
-        X_te, seq_len_te = convert.nested_list_to_tensor(te_X)
-        #y_te = convert.list_to_tensor(te_y).view(-1, 1)
-        y_te = np.array(te_y)
-        #s_te = convert.list_to_tensor(te_s)
-        s_te = np.array(te_s)
-
-
+        _, _, _, _, _, _, _, _, X_te, seq_len_te, y_te, s_te, _, _, _ = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, drop_sensitive=False, sensitive_column=sensitive)
+        
         X_te, seq_len_te = X_te.to(device), seq_len_te.to(device)
 
         te_output = model(X_te, seq_len_te)
         te_np = te_output.detach().cpu().numpy()
 
-        result = ev.get_evaluation(y_te, te_np, s_te)
+        y_te = y_te.numpy()
+        s_te = s_te.numpy()
+
+        result = ev.get_evaluation_extented(y_te, te_np, s_te, y_val_np, val_output_np)
+
         result['sensitive_attribute'] = sensitive  # Add the sensitive attribute name to the result
 
         # Append the result to the list
@@ -150,16 +140,21 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     results_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
-run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 8, 'high')
 
-run_sensitive_check('Datasets/hiring_log_medium.xes', 'hiring', 8, 'medium')
+run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
 
-run_sensitive_check('Datasets/hiring_log_low.xes', 'hiring', 8, 'low')
+run_sensitive_check('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
 
-run_sensitive_check('Datasets/lending_log_high.xes', 'lending', 5, 'high')
+run_sensitive_check('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
 
-run_sensitive_check('Datasets/lending_log_medium.xes', 'lending', 5,  'medium')
+run_sensitive_check('Datasets/lending_log_high.xes', 'lending', 6, 'high')
 
-run_sensitive_check('Datasets/lending_log_low.xes', 'lending', 5,  'low')
+run_sensitive_check('Datasets/lending_log_medium.xes', 'lending', 6,  'medium')
 
-#run_sensitive_check('Datasets/hospital_log_high.xes', 'hospital', 5)
+run_sensitive_check('Datasets/lending_log_low.xes', 'lending', 6,  'low')
+
+run_sensitive_check('Datasets/renting_log_high.xes', 'renting', 6, 'high')
+
+run_sensitive_check('Datasets/renting_log_medium.xes', 'renting', 6,  'medium')
+
+run_sensitive_check('Datasets/renting_log_low.xes', 'renting', 6,  'low')

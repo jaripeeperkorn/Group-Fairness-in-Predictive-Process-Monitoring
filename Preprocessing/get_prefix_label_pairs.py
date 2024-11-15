@@ -114,13 +114,13 @@ def create_lists(df, case_id='case:concept:name', outcome='outcome'):
         group = group.sort_index()
         
         # Drop the 'case:concept:name' and 'outcome' columns
-        sequence = group.drop(columns=[case_id, outcome]).values.tolist()
+        sequence = group.drop(columns=[case_id, outcome]).to_numpy().tolist()
         
         # Append the sequence to X
         X.append(sequence)
         
         # Append the outcome value of the last event in the sequence to y
-        y.append(group[outcome].iloc[-1])
+        y.append(int(group[outcome].iloc[-1]))
         
     return X, y
 
@@ -138,18 +138,18 @@ def create_lists_sensitive(df, sensitive_column, drop_sensitive=False, case_id='
         
         if drop_sensitive == False:
             # Drop the 'case:concept:name' and 'outcome' columns
-            sequence = group.drop(columns=[case_id, outcome]).values.tolist()
+            sequence = group.drop(columns=[case_id, outcome]).to_numpy().tolist()
         else:
-            sequence = group.drop(columns=[case_id, outcome, sensitive_column]).values.tolist()
+            sequence = group.drop(columns=[case_id, outcome, sensitive_column]).to_numpy().tolist()
         
         # Append the sequence to X
         X.append(sequence)
         
         # Append the outcome value of the last event in the sequence to y
-        y.append(group[outcome].iloc[-1])
+        y.append(int(group[outcome].iloc[-1]))
 
         #append sensitive
-        s.append(group[sensitive_column].iloc[-1])
+        s.append(int(group[sensitive_column].iloc[-1]))
         
     return X, y, s
 

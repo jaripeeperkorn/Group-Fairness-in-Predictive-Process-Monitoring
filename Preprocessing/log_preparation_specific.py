@@ -70,9 +70,12 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     else:
         #todo: delete names of logs we didn't use
         raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
-    
-        
+           
     tr, te = split_data.train_test_split(df, test_fraction=test_fraction)
+
+    # Print case statistics before prefix creation
+    print(f"Training cases before prefix creation: {tr[case_id].nunique()}")
+    print(f"Test cases before prefix creation: {te[case_id].nunique()}")
 
 
     #scale the true numerical data
@@ -87,6 +90,16 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     trval_X, trval_y, trval_s, updated_max_prefix_length = get_prefix_label_pairs.create_pairs_train_sensitive(df=tr, max_prefix_length=max_prefix_len, sensitive_column=sensitive_column, drop_sensitive=drop_sensitive, case_id=case_id, outcome='outcome')
     te_X, te_y, te_s = get_prefix_label_pairs.create_pairs_test_sensitive(df=te, max_prefix_length=updated_max_prefix_length, sensitive_column=sensitive_column, drop_sensitive=drop_sensitive, case_id=case_id, outcome='outcome')
 
+    # Print outcome statistics
+    print("Training set outcome distribution:")
+    print(f"  total number of prefixes in train: {len(trval_y)}")
+    print(f"  outcome==0: {np.mean(np.array(trval_y) == 0) * 100:.2f}%")
+    print(f"  outcome==1: {np.mean(np.array(trval_y) == 1) * 100:.2f}%")
+    print("Test set outcome distribution:")
+    print(f"  total number of prefixes in test: {len(te_y)}")
+    print(f"  outcome==0: {np.mean(np.array(te_y) == 0) * 100:.2f}%")
+    print(f"  outcome==1: {np.mean(np.array(te_y) == 1) * 100:.2f}%")
+
     if return_valdiation_set == False:
         return trval_X, trval_y, trval_s, te_X, te_y, te_s, vocsizes, num_numerical_features
     
@@ -99,7 +112,7 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
         val_X = trval_X[val_split_point:]
         val_y = trval_y[val_split_point:]
         val_s = trval_s[val_split_point:]
-        return tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features
+        return tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features, updated_max_prefix_length
 
 
 #!to do: add function that deletes cases from label definition onwards?

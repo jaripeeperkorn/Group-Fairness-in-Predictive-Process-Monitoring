@@ -125,3 +125,16 @@ worst_hyperparameters = find_worst_hyperparameters('lending','medium')
 best_combination = get_best_hyperparameter_combination('lending','low')
 
 worst_hyperparameters = find_worst_hyperparameters('lending','low')
+
+
+best_combination = get_best_hyperparameter_combination('renting','high')
+
+worst_hyperparameters = find_worst_hyperparameters('renting','high')
+
+best_combination = get_best_hyperparameter_combination('renting','medium')
+
+worst_hyperparameters = find_worst_hyperparameters('renting','medium')
+
+best_combination = get_best_hyperparameter_combination('renting','low')
+
+worst_hyperparameters = find_worst_hyperparameters('renting','low')
