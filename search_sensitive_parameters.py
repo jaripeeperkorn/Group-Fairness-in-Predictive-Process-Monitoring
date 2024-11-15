@@ -1,6 +1,4 @@
-import Preprocessing.import_data as imp
-import Preprocessing.log_preparation_specific as prepare
-import Preprocessing.list_to_tensor as convert
+import Preprocessing.full_prep_pipeline as prepare
 import DP_OOPPM.train_model as train_model
 import DP_OOPPM.evaluate_model as ev
 import DP_OOPPM.plot_curves as plot_curves
@@ -66,7 +64,6 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected']
     elif logname == 'renting':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:married']
-    log = imp.import_xes(dataset_name)
 
     X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, 
                                                                                                                                                                                        drop_sensitive=False, sensitive_column='case:gender')
