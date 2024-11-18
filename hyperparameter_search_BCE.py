@@ -157,7 +157,7 @@ def evaluate_model(model, X_val, y_val, seq_len_val):
     auc = roc_auc_score(y_gt, y_pred)
     return auc
 
-
+'''
 run_hyper('Datasets/lending_log_high.xes', 'lending', 6, 'high')
 
 run_hyper('Datasets/lending_log_medium.xes', 'lending', 6, 'medium')
@@ -175,6 +175,8 @@ run_hyper('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
 run_hyper('Datasets/renting_log_high.xes', 'renting', 6, 'high')
 
 run_hyper('Datasets/renting_log_medium.xes', 'renting', 6, 'medium')
+
+'''
 
 run_hyper('Datasets/renting_log_low.xes', 'renting', 6, 'low')
 

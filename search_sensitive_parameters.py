@@ -97,7 +97,7 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-    #prepare valdiations et needed for optimal threshold
+    #prepare valdiations set needed for optimal threshold
     y_val_np = y_val.numpy()
     X_val, seq_len_val = X_val.to(device), seq_len_val.to(device)
     val_output = model(X_val, seq_len_val)
@@ -138,17 +138,17 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     print(f"Results saved to {output_path}")
 
 
-run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
-
-run_sensitive_check('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
-
-run_sensitive_check('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
-
 run_sensitive_check('Datasets/lending_log_high.xes', 'lending', 6, 'high')
 
 run_sensitive_check('Datasets/lending_log_medium.xes', 'lending', 6,  'medium')
 
 run_sensitive_check('Datasets/lending_log_low.xes', 'lending', 6,  'low')
+
+run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
+
+run_sensitive_check('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
+
+run_sensitive_check('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
 
 run_sensitive_check('Datasets/renting_log_high.xes', 'renting', 6, 'high')
 
