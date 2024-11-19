@@ -52,7 +52,7 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
     if loss_fct == "wasserstein":
         lambdas = [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
     if loss_fct == "KL_divergence":
-        lambdas = [0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2]
+        lambdas = [0.0, 0.01, 0.02, 0.04, 0.08, 0.16, 0.32]
 
     X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, 
                                                                                                                                                                                        drop_sensitive=False, sensitive_column=sensitive_parameter)
@@ -122,11 +122,27 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
 
     # Convert the results list to a DataFrame and save to CSV
     results_df = pd.DataFrame(results_list)
-    output_path = f"Custom_loss_results/{loss_fct}/{logname}_{addendum}/{sensitive_parameter}/full_results.csv"
+    output_path = f"Custom_loss_results/{loss_fct}/{logname}_{addendum}/{sensitive_parameter}/full_results"
     output_path = output_path.replace(" ", "").replace(":", "").replace(".","")
+    output_path = output_path + ".csv"
     results_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
         
+
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
+
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
+
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
+
+
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
+
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
+
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
+
+
 
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:religious", loss_fct='wasserstein')
 
@@ -186,17 +202,4 @@ run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renti
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
 
 
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
-
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
 """
