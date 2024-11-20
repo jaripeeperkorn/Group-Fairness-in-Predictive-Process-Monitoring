@@ -183,7 +183,7 @@ run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renti
 
 
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:religious", loss_fct='KL_divergence')
-"""
+
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='KL_divergence')
 
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='KL_divergence')
@@ -202,4 +202,4 @@ run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renti
 
 run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:married", loss_fct='KL_divergence')
 
-
+"""
