@@ -182,7 +182,7 @@ def calculate_loss(outputs, y_batch, s_batch, criterion, criterion_bce, loss_fun
     if loss_function == 'BCE':
         return criterion(outputs, y_batch)
     #! change this when loss functions cleaned up
-    fair_loss, _, _, _ = criterion(outputs, s_batch, y_batch, 0.0, 1.0)
+    fair_loss, _, _, _ = criterion(outputs, s_batch, y_batch)
     bce_loss = criterion_bce(outputs, y_batch)
     return (1.0 - balance_fair_BCE) * bce_loss + balance_fair_BCE * fair_loss
 

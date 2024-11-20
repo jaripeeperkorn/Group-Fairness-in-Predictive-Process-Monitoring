@@ -50,9 +50,9 @@ def get_best_hyperparameter_combination(logname, addendum):
 
 def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sensitive_parameter, loss_fct):
     if loss_fct == "wasserstein":
-        lambdas = [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
+        lambdas = [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
     if loss_fct == "KL_divergence":
-        lambdas = [0.0, 0.01, 0.02, 0.04, 0.08, 0.16, 0.32]
+        lambdas = [0.00, 0.01, 0.02, 0.04, 0.08, 0.16, 0.32]
 
     X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, 
                                                                                                                                                                                        drop_sensitive=False, sensitive_column=sensitive_parameter)
@@ -75,6 +75,7 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
     results_list = []
 
     for lam in lambdas:
+        #! overrules hyperpameter search for batch size, needs to be larger for custom loss ftcs
         model = train_model.train_and_return_LSTM(X_train=X_train, 
                                                   seq_len_train=seq_len_train, 
                                                   y_train=y_train, 
@@ -89,7 +90,7 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
                                                   max_length=max_prefix_length, 
                                                   learning_rate=hyperparams['learning_rate'], 
                                                   max_epochs=300, 
-                                                  batch_size=hyperparams['batch_size'], 
+                                                  batch_size=512, 
                                                   patience=50, 
                                                   get_history=False, 
                                                   X_val=X_val, 
@@ -129,6 +130,21 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
     print(f"Results saved to {output_path}")
         
 
+"""
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
+
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
+
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
+
+
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
+
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
+
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
+
+
 run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
 
 run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
@@ -167,7 +183,7 @@ run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renti
 
 
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:religious", loss_fct='KL_divergence')
-
+"""
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='KL_divergence')
 
 run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='KL_divergence')
@@ -187,19 +203,3 @@ run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renti
 run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:married", loss_fct='KL_divergence')
 
 
-"""
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
-
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
-
-
-"""

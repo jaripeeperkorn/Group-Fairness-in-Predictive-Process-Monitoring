@@ -11,27 +11,36 @@ from statsmodels.distributions.empirical_distribution import ECDF
 
 plt.rcParams.update({'figure.autolayout': True})
 # Define a function to calculate demographic parity (deltaDP)
-def demographic_parity(y_pred, z_values, threshold):
+def demographic_parity(y_pred, z_values, threshold=None):
     """
-    Computes demographic parity between two groups in predicted outcomes for binary thresholded predictions.
+    Computes the demographic parity between two groups in predicted outcomes.
 
     Parameters:
-    - y_pred (array-like): Predicted values (probabilities).
+    - y_pred (array-like): Predicted values, typically probabilities or binary predictions.
     - z_values (array-like): Binary group indicators (e.g., 0 or 1) for each corresponding prediction in y_pred.
-    - threshold (float): Threshold value for binarizing predictions.
+    - threshold (float, optional): Threshold value for binarizing predictions. If provided, predictions are
+                                   classified as 1 if above the threshold, otherwise 0. If None, raw predictions are used.
 
     Returns:
     - float: The absolute difference in mean predictions between the two groups, representing demographic parity.
     """
-    # Apply threshold to obtain binary predictions
-    y_pred_binary = (y_pred > threshold).astype(int)
+    
+    # Step 1: Separate predictions by group, applying the threshold if specified
+    # - For the group with z_values == 1, apply the threshold (if given) or keep raw predictions
+    y_z_1 = y_pred[z_values == 1] > threshold if threshold else y_pred[z_values == 1]
+    # - For the group with z_values == 0, apply the threshold (if given) or keep raw predictions
+    y_z_0 = y_pred[z_values == 0] > threshold if threshold else y_pred[z_values == 0]
 
-    # Calculate mean prediction for each group
-    y_z_1_mean = y_pred_binary[z_values == 1].mean()
-    y_z_0_mean = y_pred_binary[z_values == 0].mean()
+    # Step 2: Compute the mean prediction for each group
+    # - Average prediction for group z == 1
+    y_z_1_mean = y_z_1.mean()
+    # - Average prediction for group z == 0
+    y_z_0_mean = y_z_0.mean()
 
-    # Calculate demographic parity as absolute difference between group means
+    # Step 3: Calculate demographic parity as the absolute difference between group means
     parity = abs(y_z_1_mean - y_z_0_mean)
+
+    # Step 4: Return the demographic parity value
     return parity
 
 # Define a function named ABPC that takes in four arguments:
@@ -167,5 +176,6 @@ plt.legend()
 plt.savefig("Extrafigs/toy_plot_DP.pdf", format="pdf", bbox_inches="tight")
 
 
-print("ABPC", ABPC(y, s))
-print("ABCC", ABCC(y, s))
+print("DP_c:", demographic_parity(y_pred=y, z_values=s, threshold=None))
+print("ABPC:", ABPC(y, s))
+print("ABCC:", ABCC(y, s))
