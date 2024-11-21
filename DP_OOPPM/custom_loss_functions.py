@@ -183,7 +183,7 @@ class KL_divergence_reg(torch.nn.Module):
 
         reg_loss = F.kl_div(F.log_softmax(y0, dim=0), F.softmax(y1, dim=0), reduction='batchmean')
 
-        #Multiply KL_div absolute value with 1M (otherwise lambda needs to take extreme values to see impact)
-        reg_loss = reg_loss*1000000
+        #Multiply KL_div absolute value with 100K (otherwise lambda needs to take extreme values to see impact)
+        reg_loss = reg_loss*100000
 
         return reg_loss, torch.Tensor([0]), torch.Tensor([0]), torch.Tensor([0])
