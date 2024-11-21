@@ -11,7 +11,7 @@ Preprocssing contains all the function needed to preprocess the event logs.
 
 ## Rerunning the experiment
 
-THe dependencies can be found in "environment.yaml".
+The dependencies can be found in "environment.yaml".
 
 The data used in the experiment can be found here: https://zenodo.org/records/8059489
 
