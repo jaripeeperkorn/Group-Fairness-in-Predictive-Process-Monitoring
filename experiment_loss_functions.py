@@ -130,7 +130,7 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
     print(f"Results saved to {output_path}")
         
 
-"""
+
 run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
 
 run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
@@ -202,4 +202,4 @@ run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renti
 
 run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:married", loss_fct='KL_divergence')
 
-"""
+
