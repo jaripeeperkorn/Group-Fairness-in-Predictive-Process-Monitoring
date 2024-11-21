@@ -20,6 +20,16 @@ def plot_pareto_curve(csv_path, plot_path, performance_column='auc', fairness_co
         abcc_values = results_df[fairness_column]
         lambda_values = results_df[lambda_column]
 
+        # Configure font sizes globally
+        plt.rcParams.update({
+            'font.size': 15,  # Base font size increased 2.5x (default 9)
+            'axes.labelsize': 20,  # Label font size increased 2.5x (default 11)
+            'axes.titlesize': 20,  # Title font size increased 2.5x (default 12)
+            'xtick.labelsize': 15,  # X-tick font size increased 2.5x (default 10)
+            'ytick.labelsize': 15,  # Y-tick font size increased 2.5x (default 10)
+            'legend.fontsize': 15,  # Legend font size increased 2.5x (default 10)
+        })
+
         X_labels = {'abcc':'ABCC', 'abpc': 'ABPC', 'dpe':'∆DP (continuous)'}
 
         plt.clf()
@@ -30,7 +40,7 @@ def plot_pareto_curve(csv_path, plot_path, performance_column='auc', fairness_co
 
         # Annotate points with lambda values
         for i, lam in enumerate(lambda_values):
-            plt.text(abcc_values[i], auc_values[i], f'λ={lam:.2f}', fontsize=9, ha='right', va='bottom')
+            plt.text(abcc_values[i], auc_values[i], f'λ={lam:.2f}', fontsize=15, ha='left', va='top')
 
         # Add axis labels and title
         plt.xlabel(X_labels[fairness_column])
@@ -63,7 +73,7 @@ def save_all_curves(logname, addendum):
 
     fairness_metrics = ['abcc', 'abpc', 'dpe']
 
-    loss_fcts = ['wasserstein', 'KL_divergence']
+    loss_fcts = ['wasserstein']
 
     for loss_fct in loss_fcts:
         for sens in binarys:
