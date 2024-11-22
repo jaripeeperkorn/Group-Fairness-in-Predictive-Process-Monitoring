@@ -78,10 +78,10 @@ def save_all_curves(logname, addendum):
     for loss_fct in loss_fcts:
         for sens in binarys:
             for fairness_metric in fairness_metrics:
-                csv_loc = f"Custom_loss_results/{loss_fct}/{logname}_{addendum}/{sens}/full_results"
+                csv_loc = f"Experiment2_full_results/{loss_fct}/{logname}_{addendum}/{sens}/full_results"
                 csv_loc = csv_loc.replace(" ", "").replace(":", "").replace(".","")
                 csv_loc = csv_loc + ".csv"
-                plot_loc =  f"Custom_loss_results/{loss_fct}/{logname}_{addendum}/{sens}/pareto_plot_{fairness_metric}"
+                plot_loc =  f"Experiment2_full_results/{loss_fct}/{logname}_{addendum}/{sens}/pareto_plot_{fairness_metric}"
                 plot_loc = plot_loc.replace(" ", "").replace(":", "").replace(".","")
                 plot_loc = plot_loc + ".pdf"
 
