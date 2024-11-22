@@ -6,7 +6,7 @@ def full_prep(filename, logname, max_prefix_len, drop_sensitive, sensitive_colum
     log = imp.import_xes(filename)
     tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features, new_max_prefix_len = prepare.prepare_log(
         df=log, log_name=logname, max_prefix_len=max_prefix_len, test_fraction=0.2, 
-        return_valdiation_set=True, validation_fraction=0.2,
+        return_validation_set=True, validation_fraction=0.2,
         act_label='concept:name', case_id='case:concept:name', 
         sensitive_column=sensitive_column, drop_sensitive=drop_sensitive)
     X_train, seq_len_train = convert.nested_list_to_tensor(tr_X)

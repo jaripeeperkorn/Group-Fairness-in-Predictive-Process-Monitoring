@@ -10,7 +10,7 @@ import numpy as np
 
 
 # Define for the used event logs, which are categorical, which are numerical and change order etc.
-def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiation_set = False, validation_fraction=0.1, act_label = 'concept:name', case_id='case:concept:name', sensitive_column = 'case:gender', drop_sensitive=False):
+def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_validation_set = False, validation_fraction=0.1, act_label = 'concept:name', case_id='case:concept:name', sensitive_column = 'case:gender', drop_sensitive=False):
     
     #added to be sure later on
     df = sort_log(df)
@@ -90,6 +90,9 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     trval_X, trval_y, trval_s, updated_max_prefix_length = get_prefix_label_pairs.create_pairs_train_sensitive(df=tr, max_prefix_length=max_prefix_len, sensitive_column=sensitive_column, drop_sensitive=drop_sensitive, case_id=case_id, outcome='outcome')
     te_X, te_y, te_s = get_prefix_label_pairs.create_pairs_test_sensitive(df=te, max_prefix_length=updated_max_prefix_length, sensitive_column=sensitive_column, drop_sensitive=drop_sensitive, case_id=case_id, outcome='outcome')
 
+    if drop_sensitive == True:
+        num_numerical_features = num_numerical_features - 1 #the removed binary feature
+        
     # Print outcome statistics
     print("Training set outcome distribution:")
     print(f"  total number of prefixes in train: {len(trval_y)}")
@@ -100,7 +103,7 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_valdiati
     print(f"  outcome==0: {np.mean(np.array(te_y) == 0) * 100:.2f}%")
     print(f"  outcome==1: {np.mean(np.array(te_y) == 1) * 100:.2f}%")
 
-    if return_valdiation_set == False:
+    if return_validation_set == False:
         return trval_X, trval_y, trval_s, te_X, te_y, te_s, vocsizes, num_numerical_features
     
     else:

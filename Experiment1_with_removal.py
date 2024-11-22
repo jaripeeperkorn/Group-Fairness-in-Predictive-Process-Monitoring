@@ -65,8 +65,9 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     elif logname == 'renting':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:married']
 
+    #!difference
     X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, 
-                                                                                                                                                                                       drop_sensitive=False, sensitive_column='case:gender')
+                                                                                                                                                                                       drop_sensitive=True, sensitive_column='case:gender')
 
     hyperparams = get_best_hyperparameter_combination(logname, addendum)
 
@@ -125,7 +126,7 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
         # Append the result to the list
         results_list.append(result)
 
-        plot_filename = f"Sensitive_parameter_results/figs/{logname}_{addendum}_{sensitive}_plot.pdf"
+        plot_filename = f"Experiment1_full_results_with_removal/figs/{logname}_{addendum}_{sensitive}_plot.pdf"
         plot_filename = plot_filename.replace(" ", "").replace(":", "")
 
         plot_curves.plot_curves(te_np, s_te, sensitive, plot_filename)
@@ -133,7 +134,7 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
 
     # Convert the results list to a DataFrame and save to CSV
     results_df = pd.DataFrame(results_list)
-    output_path = f"Sensitive_parameter_results/{logname}_{addendum}_sensitive_evaluation_results.csv"
+    output_path = f"Experiment1_full_results_with_removal/{logname}_{addendum}_sensitive_evaluation_results.csv"
     results_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
