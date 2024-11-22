@@ -65,51 +65,50 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     elif logname == 'renting':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:married']
 
-    #!difference
-    X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, 
-                                                                                                                                                                                       drop_sensitive=True, sensitive_column='case:gender')
-
+ 
     hyperparams = get_best_hyperparameter_combination(logname, addendum)
 
-    model = train_model.train_and_return_LSTM(
-        X_train=X_train, 
-        seq_len_train=seq_len_train, 
-        y_train=y_train, 
-        s_train=s_train, 
-        loss_function='BCE', 
-        vocab_sizes=vocsizes, 
-        num_numerical_features=num_numerical_features, 
-        dropout=hyperparams['dropout'], 
-        lstm_size=hyperparams['lstm_size'], 
-        num_lstm=hyperparams['num_layers'], 
-        bidirectional=hyperparams['bidirectional'], 
-        max_length=new_max_prefix_len, 
-        learning_rate=hyperparams['learning_rate'], 
-        max_epochs=300, 
-        batch_size=hyperparams['batch_size'], 
-        patience=50, 
-        get_history=False, 
-        X_val=X_val, 
-        seq_len_val=seq_len_val, 
-        y_val=y_val, 
-        s_val=s_val
-    )
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-
-    #prepare valdiations set needed for optimal threshold
-    y_val_np = y_val.numpy()
-    X_val, seq_len_val = X_val.to(device), seq_len_val.to(device)
-    val_output = model(X_val, seq_len_val)
-    val_output_np = val_output.detach().cpu().numpy()
-    
+       
 
     # Initialize an empty list to store results for each sensitive attribute
     results_list = []
 
     for sensitive in binarys:
-        _, _, _, _, _, _, _, _, X_te, seq_len_te, y_te, s_te, _, _, _ = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, drop_sensitive=False, sensitive_column=sensitive)
+        #!difference: whole training inside loop and sensitive removal to True
+        X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, max_prefix_len=max_prefix_length, 
+                                                                                                                                                                                           drop_sensitive=True, sensitive_column=sensitive)
+        model = train_model.train_and_return_LSTM(
+            X_train=X_train, 
+            seq_len_train=seq_len_train, 
+            y_train=y_train, 
+            s_train=s_train, 
+            loss_function='BCE', 
+            vocab_sizes=vocsizes, 
+            num_numerical_features=num_numerical_features, 
+            dropout=hyperparams['dropout'], 
+            lstm_size=hyperparams['lstm_size'], 
+            num_lstm=hyperparams['num_layers'], 
+            bidirectional=hyperparams['bidirectional'], 
+            max_length=new_max_prefix_len, 
+            learning_rate=hyperparams['learning_rate'], 
+            max_epochs=300, 
+            batch_size=hyperparams['batch_size'], 
+            patience=50, 
+            get_history=False, 
+            X_val=X_val, 
+            seq_len_val=seq_len_val, 
+            y_val=y_val, 
+            s_val=s_val
+        )
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model.to(device)
+
+        #prepare valdiations set needed for optimal threshold
+        y_val_np = y_val.numpy()
+        X_val, seq_len_val = X_val.to(device), seq_len_val.to(device)
+        val_output = model(X_val, seq_len_val)
+        val_output_np = val_output.detach().cpu().numpy()
         
         X_te, seq_len_te = X_te.to(device), seq_len_te.to(device)
 
