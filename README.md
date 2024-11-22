@@ -16,9 +16,9 @@ The dependencies can be found in "environment.yaml".
 The data used in the experiment can be found here: https://zenodo.org/records/8059489
 
 To rerun the full experiment testing all sensitive parameters, run the code in:
-"search_sensitive_parameters.py"
+"Experiment1_no_removal.py"
 To rerun the experiments testing the IPM based loss functions run:
-"experiment_loss_functions.py"
+"Experiment2.py"
 
 To rerun the hyperparameter search run:
 "hyperparameter_search_BCE.py"
