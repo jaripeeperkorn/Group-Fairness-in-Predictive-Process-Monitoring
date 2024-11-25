@@ -10,7 +10,7 @@ import numpy as np
 
 
 # Define for the used event logs, which are categorical, which are numerical and change order etc.
-def prepare_log(df, log_name, max_prefix_len, test_fraction=0.3, return_validation_set = False, validation_fraction=0.1, act_label = 'concept:name', case_id='case:concept:name', sensitive_column = 'case:gender', drop_sensitive=False):
+def prepare_log(df, log_name, max_prefix_len, test_fraction=0.2, return_validation_set = False, validation_fraction=0.2, act_label = 'concept:name', case_id='case:concept:name', sensitive_column = 'case:protected', drop_sensitive=False):
     
     #added to be sure later on
     df = sort_log(df)
