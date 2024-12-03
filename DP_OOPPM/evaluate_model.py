@@ -84,7 +84,7 @@ def get_evaluation_extented(y_gt, y_pred, s, val_gt, val_pred):
     recall_opt = recall_score(y_gt, y_pred > opt_threshold)
     f1_opt = f1_score(y_gt, y_pred > opt_threshold) #* 100
 
-    dp_opt = custom_metrics.demographic_parity(y_pred, s, threshold=0.5)
+    dp_opt = custom_metrics.demographic_parity(y_pred, s, threshold=opt_threshold)
 
 
     return {"accuracy": accuracy, "auc": auc, "precision": precision, "recall": recall, "f1": f1, "dp": dp, "optimal_threshold":opt_threshold, 

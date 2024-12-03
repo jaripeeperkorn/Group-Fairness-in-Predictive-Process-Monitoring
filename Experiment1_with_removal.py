@@ -65,11 +65,8 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     elif logname == 'renting':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:married']
 
- 
     hyperparams = get_best_hyperparameter_combination(logname, addendum)
-
-       
-
+  
     # Initialize an empty list to store results for each sensitive attribute
     results_list = []
 

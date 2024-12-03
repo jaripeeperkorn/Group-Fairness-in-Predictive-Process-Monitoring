@@ -22,21 +22,37 @@ def plot_pareto_curve(csv_path, plot_path, performance_column='auc', fairness_co
 
         # Configure font sizes globally
         plt.rcParams.update({
-            'font.size': 15,  # Base font size increased 2.5x (default 9)
-            'axes.labelsize': 20,  # Label font size increased 2.5x (default 11)
-            'axes.titlesize': 20,  # Title font size increased 2.5x (default 12)
-            'xtick.labelsize': 15,  # X-tick font size increased 2.5x (default 10)
-            'ytick.labelsize': 15,  # Y-tick font size increased 2.5x (default 10)
-            'legend.fontsize': 15,  # Legend font size increased 2.5x (default 10)
+            'font.size': 15,
+            'axes.labelsize': 20,
+            'axes.titlesize': 20,
+            'xtick.labelsize': 15,
+            'ytick.labelsize': 15,
+            'legend.fontsize': 15
         })
 
         X_labels = {'abcc':'ABCC', 'abpc': 'ABPC', 'dpe':'∆DP (continuous)'}
 
         plt.clf()
 
-        # Plot the Pareto curve
+        # Pareto front calculation
+        pareto_points = []
+        sorted_indices = sorted(range(len(abcc_values)), key=lambda i: (abcc_values[i], -auc_values[i]))
+        max_auc_so_far = float('-inf')
+
+        for idx in sorted_indices:
+            if auc_values[idx] > max_auc_so_far:
+                pareto_points.append(idx)
+                max_auc_so_far = auc_values[idx]
+
+        # Plot the points
         plt.figure(figsize=(10, 6))
-        plt.scatter(abcc_values, auc_values, c='blue', alpha=0.7, label='Pareto Points')
+        plt.scatter(abcc_values, auc_values, c='blue', alpha=0.7, label='All Points')
+
+        # Highlight Pareto front
+        pareto_abcc = [abcc_values[i] for i in pareto_points]
+        pareto_auc = [auc_values[i] for i in pareto_points]
+        plt.plot(pareto_abcc, pareto_auc, 'r--', linewidth=2, label='Pareto Front')
+        plt.scatter(pareto_abcc, pareto_auc, c='red', alpha=0.9, label='Pareto Points')
 
         # Annotate points with lambda values
         for i, lam in enumerate(lambda_values):
@@ -91,9 +107,9 @@ def save_all_curves(logname, addendum):
 
 
 
-save_all_curves('hiring', 'high')
+#save_all_curves('hiring', 'high')
 
-save_all_curves('lending', 'high')
+#save_all_curves('lending', 'high')
 
 save_all_curves('renting', 'high')
 
