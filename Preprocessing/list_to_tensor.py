@@ -2,10 +2,6 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 import numpy as np
 
-
-
-
-
 def nested_list_to_tensor(nested_list, dtype=torch.float32):
     """
     Convert a nested list of sequences to a padded PyTorch tensor for LSTM input.
@@ -21,7 +17,7 @@ def list_to_tensor(lst):
     tensor = torch.from_numpy(np.array(lst))
     return tensor.float()
 
-
+#! not used yet
 def nested_list_to_tensor_left_padding(nested_list, dtype=torch.float32):
     """
     Convert a nested list of sequences to a left-padded PyTorch tensor for LSTM input.

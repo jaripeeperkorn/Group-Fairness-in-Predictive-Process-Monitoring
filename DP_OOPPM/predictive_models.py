@@ -2,8 +2,6 @@ import torch.nn as nn
 import torch
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-#todo do we need batchnorm?
-
 class LSTM_Model(nn.Module):
     def __init__(self, 
                  vocab_sizes, 
@@ -15,6 +13,25 @@ class LSTM_Model(nn.Module):
                  num_lstm = 1,
                  bidirectional = False
                  ):
+        """
+    LSTM_Model is a neural network model for processing sequences with both categorical and numerical features.
+    It uses an LSTM layer to capture temporal dependencies and a dense layer for final output.
+
+    Attributes:
+        vocab_sizes (list): Sizes of the vocabularies for each categorical feature.
+        embed_sizes (list): Embedding dimensions for each categorical feature.
+        num_numerical_features (int): Number of numerical features.
+        max_length (int): Maximum sequence length.
+        dropout (float): Dropout rate for regularization.
+        lstm_size (int): Number of features in the hidden state of the LSTM.
+        num_lstm (int): Number of LSTM layers.
+        bidirectional (bool): If True, use a bidirectional LSTM.
+
+    Methods:
+        forward(inputs, sequence_lengths):
+            Forward pass through the model. Takes inputs and sequence lengths, processes them through embedding,
+            LSTM, and dense layers, and returns the final output.
+    """
         
         super(LSTM_Model, self).__init__()
         

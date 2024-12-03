@@ -4,12 +4,7 @@ import DP_OOPPM.evaluate_model as ev
 import DP_OOPPM.plot_curves as plot_curves
 
 import pandas as pd
-import numpy as np
-
-
 import torch
-
-import os
 
 #code to find the sensitive parmeter for which the DP and other measures is the highest
 
@@ -55,8 +50,27 @@ def get_best_hyperparameter_combination(logname, addendum):
         return None
 
 
-def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
-    
+def do_full_experiment(dataset_name, logname, max_prefix_length, addendum):
+    """
+    Conducts a full experiment by preprocessing data, training an LSTM model, and evaluating it.
+
+    This function performs a series of steps to execute a complete experiment pipeline:
+    1. Preprocesses the dataset using the specified parameters.
+    2. Retrieves the best hyperparameter combination for the model.
+    3. Trains an LSTM model with the obtained hyperparameters.
+    4. Evaluates the model using various metrics for each sensitive attribute.
+    5. Plots and saves probability distribution curves for sensitive features.
+    6. Saves the evaluation results to a CSV file.
+
+    Parameters:
+        dataset_name (str): The name of the dataset file.
+        logname (str): The type of log for determining preprocessing steps.
+        max_prefix_length (int): Maximum length of prefixes to generate.
+        addendum (str): Additional identifier for the experiment.
+
+    Returns:
+        None
+    """
     if logname == 'hiring':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:religious']
     elif logname == 'hospital':
@@ -139,20 +153,20 @@ def run_sensitive_check(dataset_name, logname, max_prefix_length, addendum):
     print(f"Results saved to {output_path}")
 
 
-run_sensitive_check('Datasets/lending_log_high.xes', 'lending', 6, 'high')
+do_full_experiment('Datasets/lending_log_high.xes', 'lending', 6, 'high')
 
-run_sensitive_check('Datasets/lending_log_medium.xes', 'lending', 6,  'medium')
+do_full_experiment('Datasets/lending_log_medium.xes', 'lending', 6,  'medium')
 
-run_sensitive_check('Datasets/lending_log_low.xes', 'lending', 6,  'low')
+do_full_experiment('Datasets/lending_log_low.xes', 'lending', 6,  'low')
 
-run_sensitive_check('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
+do_full_experiment('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
 
-run_sensitive_check('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
+do_full_experiment('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
 
-run_sensitive_check('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
+do_full_experiment('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
 
-run_sensitive_check('Datasets/renting_log_high.xes', 'renting', 6, 'high')
+do_full_experiment('Datasets/renting_log_high.xes', 'renting', 6, 'high')
 
-run_sensitive_check('Datasets/renting_log_medium.xes', 'renting', 6,  'medium')
+do_full_experiment('Datasets/renting_log_medium.xes', 'renting', 6,  'medium')
 
-run_sensitive_check('Datasets/renting_log_low.xes', 'renting', 6,  'low')
+do_full_experiment('Datasets/renting_log_low.xes', 'renting', 6,  'low')

@@ -34,3 +34,4 @@ Preprocessing/__pycache__
 Hyperparameters/BCE/OLD_WRONG_hiring_hyperparameter_tuning_results.csv
 make_table.py
 get_information_logs.py
+generate_toy_example_figures.py

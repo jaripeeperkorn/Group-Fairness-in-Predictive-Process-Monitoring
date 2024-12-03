@@ -1,17 +1,42 @@
+#This fiel contains the transformations we do specified for the event logs we used in the experiment
+#TODO Make seperate scripts for all functionalities + one for the specifications
+
 import Preprocessing.encode_categorical_data as encode_categorical_data
 import Preprocessing.split_data as split_data
 import Preprocessing.get_prefix_label_pairs as get_prefix_label_pairs
-
 from sklearn.preprocessing import MinMaxScaler
-
 import numpy as np
 
-#! add settings other log types
-
-
-# Define for the used event logs, which are categorical, which are numerical and change order etc.
 def prepare_log(df, log_name, max_prefix_len, test_fraction=0.2, return_validation_set = False, validation_fraction=0.2, act_label = 'concept:name', case_id='case:concept:name', sensitive_column = 'case:protected', drop_sensitive=False):
-    
+    """
+    Prepare and preprocess an event log DataFrame for predictive modeling.
+
+    This function sorts, labels, cleans, and encodes features of the input DataFrame
+    based on the specified log type. It splits the data into training and test sets,
+    scales numerical features, and generates prefix sequences with outcomes and
+    sensitive attributes for training and testing. Optionally, it can also return a
+    validation set.
+
+    Parameters:
+        df (pd.DataFrame): The input DataFrame containing event logs.
+        log_name (str): The type of log, determining the preprocessing steps.
+        max_prefix_len (int): The maximum length of prefixes to generate.
+        test_fraction (float, optional): Fraction of data to use as the test set. Defaults to 0.2.
+        return_validation_set (bool, optional): Whether to return a validation set. Defaults to False.
+        validation_fraction (float, optional): Fraction of training data to use as validation set. Defaults to 0.2.
+        act_label (str, optional): Column name for activity labels. Defaults to 'concept:name'.
+        case_id (str, optional): Column name for case identifiers. Defaults to 'case:concept:name'.
+        sensitive_column (str, optional): Column name for sensitive attributes. Defaults to 'case:protected'.
+        drop_sensitive (bool, optional): Whether to drop the sensitive column. Defaults to False.
+
+    Returns:
+        tuple: Depending on `return_validation_set`, returns either:
+            - Training, test prefixes, outcomes, sensitive attributes, vocabulary sizes, and number of numerical features.
+            - Training, validation, test prefixes, outcomes, sensitive attributes, vocabulary sizes, number of numerical features, and updated max prefix length.
+
+    Raises:
+        ValueError: If an unsupported log type is provided.
+    """
     #added to be sure later on
     df = sort_log(df)
     
@@ -65,10 +90,8 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.2, return_validati
         df, num_numerical_features, true_num_feature_list  = clean_order_features(df, "renting")
         #encode features
         df, vocsizes = encode_features(df, "renting")
-
-       
+ 
     else:
-        #todo: delete names of logs we didn't use
         raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
            
     tr, te = split_data.train_test_split(df, test_fraction=test_fraction)
@@ -117,9 +140,6 @@ def prepare_log(df, log_name, max_prefix_len, test_fraction=0.2, return_validati
         val_s = trval_s[val_split_point:]
         return tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features, updated_max_prefix_length
 
-
-#!to do: add function that deletes cases from label definition onwards?
-
 def add_label(df, log_name, act_label = 'concept:name', case_id='case:concept:name'):
     """
     Add outcome column to DataFrame based on a certain definition for different log types.
@@ -139,7 +159,6 @@ def add_label(df, log_name, act_label = 'concept:name', case_id='case:concept:na
         new_df = add_label_activity_presence(df, act_label, case_id, 'Make Job Offer')
 
     elif log_name == "hospital":
-        #! double check whether there are sets where both are present
         #we define the outcome based on whether treatment unsuccesful or treatment unsuccesful is initially reached
         print(f'Preprocess {log_name} type event log, with outcome defined on presence of treatment unsuccesful, even if succesful aftewards')
         new_df = add_label_activity_presence(df, act_label, case_id, 'Treatment unsuccesful')
@@ -148,12 +167,10 @@ def add_label(df, log_name, act_label = 'concept:name', case_id='case:concept:na
         print(f'Preprocess {log_name} type event log, with outcome defined on presence of sign loan agreement')
         new_df = add_label_activity_presence(df, act_label, case_id, 'Sign Loan Agreement')
     elif log_name == "renting":
-        #! we probably need to delete all events after sign contract
         #we define the outcome based on whether the contract is signed or proscpective tenant is rejected
         print(f'Preprocess {log_name} type event log, with outcome defined on presence of sign contract')
         new_df = add_label_activity_presence(df, act_label, case_id, 'Sign Contract')
     else:
-        #todo: delete names of logs we didn't use
         raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
     return new_df
     
@@ -191,7 +208,24 @@ def add_label_activity_presence(df, act_label, case_id, outcome_act):
     return df
 
 def clean_order_features(df, log_name):
-    #todo ORDER FEATURES, REMOVE DUPLICATES, CONVERT BOOLEAN TO NUMERICAL, MAKE SURE OUTCOME IS LAST
+    """
+    Clean and reorder features in a DataFrame based on the specified log type.
+
+    Parameters:
+        df (pd.DataFrame): The DataFrame containing the data to be cleaned.
+        log_name (str): The name of the log type, which determines the feature set
+                        and order. Valid options are 'hiring', 'hospital', 'lending',
+                        and 'renting'.
+
+    Returns:
+        tuple: A tuple containing:
+            - pd.DataFrame: The cleaned and reordered DataFrame.
+            - int: The number of numerical features.
+            - list: A list of numerical feature names for potential scaling.
+
+    Raises:
+        ValueError: If an invalid log type is provided.
+    """
     if log_name == "hiring":
         #! we delete time for now
         categorical_features = ['concept:name', 'resource']
@@ -247,15 +281,37 @@ def clean_order_features(df, log_name):
 
     
     else:
-        #todo: delete names of logs we didn't use
         raise ValueError("No valid event log type (of currently implemented) logs was given, try hiring, hospital, lending or renting.")
     
     #we also return list of true numericals to know which to minmaxscale
     return df, num_numerical_features, num_features 
 
-
-
 def encode_features(df, log_name):
+    """
+    Encode categorical features in a DataFrame based on the specified log type.
+
+    This function encodes categorical features in the input DataFrame using integer
+    encoding, tailored to the specified log type. It supports different log types
+    such as "hiring", "hospital", "lending", and "renting", each with predefined
+    categorical features to encode. The function returns a new DataFrame with the
+    encoded features and a list of vocabulary sizes for each categorical feature.
+
+    Parameters:
+        df (pd.DataFrame): The input DataFrame containing the data to be encoded.
+        log_name (str): The name of the log type, which determines the categorical
+                        features to encode. Supported values are "hiring", "hospital",
+                        "lending", and "renting".
+
+    Returns:
+        tuple: A tuple containing:
+            - pd.DataFrame: A new DataFrame with the specified categorical features
+            encoded as integers.
+            - list of int: A list of vocabulary sizes for each encoded categorical
+            feature.
+
+    Raises:
+        ValueError: If an unsupported log type is provided.
+    """
     voc_sizes = []
     if log_name == "hiring":
         cat_features = ['concept:name', 'resource']
@@ -265,8 +321,6 @@ def encode_features(df, log_name):
         new_df = encode_categorical_data.integer_encode_categorical_data(df, cat_features)
 
     elif log_name == "hospital":
-        # todo!
-        #aanvullen?
         cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()
@@ -274,8 +328,6 @@ def encode_features(df, log_name):
         new_df = encode_categorical_data.integer_encode_categorical_data(df, cat_features)
 
     elif log_name == "lending":
-        # todo!
-        #aanvullen?
         cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()
@@ -283,8 +335,6 @@ def encode_features(df, log_name):
         new_df = encode_categorical_data.integer_encode_categorical_data(df, cat_features)
 
     elif log_name == "renting":
-        # todo!
-        #aanvullen?
         cat_features = ['concept:name', 'resource']
         for cat in cat_features:
             vocsize = df[cat].nunique()

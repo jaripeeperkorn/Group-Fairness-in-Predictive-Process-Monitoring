@@ -3,6 +3,26 @@ import Preprocessing.log_preparation_specific as prepare
 import Preprocessing.list_to_tensor as convert
 
 def full_prep(filename, logname, max_prefix_len, drop_sensitive, sensitive_column):
+    """
+    Executes the full preprocessing pipeline for an event log file.
+
+    This function imports an XES file, prepares the event log for predictive modeling,
+    and converts the data into PyTorch tensors suitable for LSTM input. It returns
+    training, validation, and test datasets along with their sequence lengths, 
+    vocabulary sizes, number of numerical features, and updated maximum prefix length.
+
+    Parameters:
+        filename (str): Path to the XES file to be imported.
+        logname (str): Type of log for determining preprocessing steps.
+        max_prefix_len (int): Maximum length of prefixes to generate.
+        drop_sensitive (bool): Whether to drop the sensitive column.
+        sensitive_column (str): Column name for sensitive attributes.
+
+    Returns:
+        tuple: Contains PyTorch tensors for training, validation, and test datasets,
+        their sequence lengths, vocabulary sizes, number of numerical features, and
+        updated maximum prefix length.
+    """
     log = imp.import_xes(filename)
     tr_X, tr_y, tr_s, val_X, val_y, val_s, te_X, te_y, te_s, vocsizes, num_numerical_features, new_max_prefix_len = prepare.prepare_log(
         df=log, log_name=logname, max_prefix_len=max_prefix_len, test_fraction=0.2, 

@@ -1,9 +1,34 @@
 import DP_OOPPM.custom_metrics as custom_metrics
-
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, f1_score
 
 def get_evaluation(y_gt, y_pred, s, binary_threshold = 0.5):
-   
+    """
+    Evaluate the performance and fairness of a predictive model.
+
+    This function computes various evaluation metrics for a given set of ground truth
+    labels and predicted values. It includes standard performance metrics such as
+    accuracy, AUC, precision, recall, and F1 score, as well as fairness metrics like
+    demographic parity, Area Between Probability Curves (ABPC), and Area Between
+    Cumulative Curves (ABCC).
+
+    Parameters:
+        y_gt (array-like): Ground truth binary labels.
+        y_pred (array-like): Predicted values, typically probabilities.
+        s (array-like): Binary group indicators for each sample.
+        binary_threshold (float, optional): Threshold for binarizing predictions. Default is 0.5.
+
+    Returns:
+        dict: A dictionary containing the computed metrics:
+            - "accuracy": Accuracy score.
+            - "auc": Area Under the ROC Curve.
+            - "precision": Precision score.
+            - "recall": Recall score.
+            - "f1": F1 score.
+            - "dp": Demographic parity with threshold.
+            - "dpe": Demographic parity without threshold.
+            - "abpc": Area Between Probability Curves.
+            - "abcc": Area Between Cumulative Curves.
+    """
     y_gt = y_gt.ravel()
     y_pred = y_pred.ravel()
     s = s.ravel()
@@ -20,7 +45,17 @@ def get_evaluation(y_gt, y_pred, s, binary_threshold = 0.5):
     abpc = custom_metrics.ABPC(y_pred, s)
     abcc = custom_metrics.ABCC(y_pred, s)
 
-    return {"accuracy": accuracy, "auc": auc, "precision": precision, "recall": recall, "f1": f1, "dp": dp, "dpe": dpe, "abpc": abpc, "abcc": abcc}
+    return {
+        "accuracy": accuracy,
+        "auc": auc,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "dp": dp,
+        "dpe": dpe,
+        "abpc": abpc,
+        "abcc": abcc
+    }
 
 import numpy as np
 
@@ -50,13 +85,29 @@ def find_best_threshold(y_val_gt, y_val_pred, thresholds=np.linspace(0, 1, 101))
 
     return best_threshold
 
-
-# Example usage in your evaluation workflow
-# validation_results = find_best_threshold(y_val_gt, y_val_pred, s_val)
-# print(validation_results)
-
 def get_evaluation_extented(y_gt, y_pred, s, val_gt, val_pred):
-   
+    """
+    Evaluate model predictions and compute various metrics.
+
+    This function calculates several evaluation metrics for model predictions,
+    including accuracy, AUC, precision, recall, F1 score, and fairness metrics
+    such as demographic parity, ABPC, and ABCC. It also determines the optimal
+    threshold for maximizing the F1 score on a validation set and recalculates
+    metrics using this threshold.
+
+    Parameters:
+        y_gt (array-like): Ground truth labels for the test set.
+        y_pred (array-like): Predicted probabilities for the test set.
+        s (array-like): Sensitive attribute labels for the test set.
+        val_gt (array-like): Ground truth labels for the validation set.
+        val_pred (array-like): Predicted probabilities for the validation set.
+
+    Returns:
+        dict: A dictionary containing computed metrics, including accuracy,
+            AUC, precision, recall, F1 score, demographic parity, optimal
+            threshold, and fairness metrics.
+    """
+    
     y_gt = y_gt.ravel()
     y_pred = y_pred.ravel()
     s = s.ravel()
@@ -87,6 +138,18 @@ def get_evaluation_extented(y_gt, y_pred, s, val_gt, val_pred):
     dp_opt = custom_metrics.demographic_parity(y_pred, s, threshold=opt_threshold)
 
 
-    return {"accuracy": accuracy, "auc": auc, "precision": precision, "recall": recall, "f1": f1, "dp": dp, "optimal_threshold":opt_threshold, 
-            "accuracy_optimal": accuracy_opt, "precision_optimal": precision_opt, "recall_optimal": recall_opt, "f1_optimal": f1_opt, "dp_optimal": dp_opt,
-            "dpe": dpe, "abpc": abpc, "abcc": abcc}
+    return {"accuracy": accuracy, 
+            "auc": auc, 
+            "precision": precision, 
+            "recall": recall, 
+            "f1": f1, 
+            "dp": dp, 
+            "optimal_threshold":opt_threshold, 
+            "accuracy_optimal": accuracy_opt, 
+            "precision_optimal": precision_opt, 
+            "recall_optimal": recall_opt, 
+            "f1_optimal": f1_opt, 
+            "dp_optimal": dp_opt,
+            "dpe": dpe, 
+            "abpc": abpc, 
+            "abcc": abcc}

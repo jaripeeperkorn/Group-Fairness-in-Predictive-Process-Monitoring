@@ -1,8 +1,21 @@
 from matplotlib import pyplot as plt
 import seaborn as sns
-import numpy as np
 
 def plot_curves(output_y, s, sensitive_feature, name_plot):
+    """
+    Plots and saves the probability distribution curves for a given sensitive feature.
+
+    This function clears the current plot, sets the style and palette for Seaborn,
+    and plots Kernel Density Estimation (KDE) curves for two subsets of the output
+    probabilities based on the sensitive feature. It labels the axes, sets the title,
+    limits the x-axis, adds a legend, and saves the plot as a PDF file.
+
+    Parameters:
+        output_y (np.ndarray): Array of output probabilities.
+        s (np.ndarray): Array indicating the sensitive feature values.
+        sensitive_feature (str): Name of the sensitive feature.
+        name_plot (str): Filename for saving the plot.
+    """
 
     plt.clf()
 

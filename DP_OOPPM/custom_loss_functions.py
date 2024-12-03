@@ -1,16 +1,33 @@
 import torch
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
-from torch import nn
 from scipy.stats import wasserstein_distance
 
 # Define a new class called gap_reg that inherits from torch.nn.Module
 
 class wasserstein_reg(torch.nn.Module):
     """
-    As implemented by Shalit et al., translated to PyTorch: https://github.com/clinicalml/cfrnet/blob/master/cfr/util.py
+    A PyTorch module for Wasserstein regularization as implemented by Shalit et al.
+
+    This class computes the Wasserstein distance between two distributions, typically
+    used for regularization in machine learning models. It supports both local and
+    global regularization modes, with options for threshold-based or percentile-based
+    selection of values.
+
+    Attributes:
+        mode (str): The mode of regularization, default is "dp".
+        local_reg (bool): Whether to apply local regularization, default is True.
+        threshold_based (bool): Determines if regularization is based on thresholds
+            or percentiles, default is True.
+
+    Methods:
+        forward(y_pred, s, y_gt, pct_a=0.0, pct_b=1.0):
+            Computes the Wasserstein distance between two groups of predictions.
+
+    Raises:
+        ValueError: If no predictions fall within the specified threshold range
+        when threshold_based is True.
     """
     #! fix device issues, now dirty fix put everything on CPU
     def __init__(self, mode="dp", local_reg=True, threshold_based=True):
@@ -125,6 +142,23 @@ class wasserstein_reg(torch.nn.Module):
 
 
 class KL_divergence_reg(torch.nn.Module):
+    """
+    KL_divergence_reg is a custom PyTorch module for calculating a regularization loss based on the 
+    Kullback-Leibler divergence between two groups of predictions. The regularization can be applied 
+    locally between specified thresholds or percentiles.
+
+    Attributes:
+        mode (str): The mode of operation, default is "dp".
+        local_reg (bool): Whether to apply local regularization, default is True.
+        threshold_based (bool): Determines if regularization is based on thresholds or percentiles, 
+                                default is True.
+
+    Methods:
+        forward(y_pred, s, y_gt, pct_a=0.0, pct_b=1.0):
+            Computes the regularization loss between two groups of predictions, optionally selecting 
+            values based on thresholds or percentiles. Returns the scaled KL divergence loss and 
+            placeholder tensors.
+    """
     def __init__(self, mode="dp", local_reg=True, threshold_based=True):
         super(KL_divergence_reg, self).__init__()
         self.mode = mode

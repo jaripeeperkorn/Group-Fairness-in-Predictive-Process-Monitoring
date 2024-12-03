@@ -12,11 +12,28 @@ import os
 
 # Main hyperparameter tuning function
 def run_hyper(dataset_name, logname, max_prefix_len, addendum):
+    """
+    Runs hyperparameter tuning for an LSTM model on a specified dataset.
+
+    This function sets up logging, prepares the data, generates combinations of 
+    hyperparameters, and iterates over them to train and evaluate models. It logs 
+    the AUC scores for each combination and saves the results to a CSV file. 
+    Previously completed combinations are skipped to avoid redundant computations.
+
+    Parameters:
+        dataset_name (str): Path to the dataset file.
+        logname (str): Type of log for determining preprocessing steps.
+        max_prefix_len (int): Maximum length of prefixes to generate.
+        addendum (str): Additional identifier for the results file.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the results of the hyperparameter tuning.
+    """
     # Log setup
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Data Preparation
-    X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, X_te, seq_len_te, y_te, s_te, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, 
+    X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, _, _, _, _, vocsizes, num_numerical_features, new_max_prefix_len = prepare.full_prep(filename=dataset_name, logname=logname, 
                                                                                                                                                                                        max_prefix_len=max_prefix_len, drop_sensitive=False, 
                                                                                                                                                                                        sensitive_column='case:gender')
     
@@ -116,6 +133,7 @@ def run_hyper(dataset_name, logname, max_prefix_len, addendum):
 def initialize_model(X_train, seq_len_train, y_train, s_train, vocab_sizes, num_numerical_features, 
                      num_layers, bidirectional, lstm_size, batch_size, learning_rate, dropout, 
                      max_length, max_epochs, patience, X_val, seq_len_val, y_val, s_val):
+    #Initializes and trains an LSTM model using the specified training and validation data.
     model = train_model.train_and_return_LSTM(
         X_train=X_train, 
         seq_len_train=seq_len_train, 
@@ -142,6 +160,22 @@ def initialize_model(X_train, seq_len_train, y_train, s_train, vocab_sizes, num_
     return model
 
 def evaluate_model(model, X_val, y_val, seq_len_val):
+    """
+    Evaluates the performance of a given model on validation data using the AUC metric.
+
+    This function moves the model and validation data to the appropriate device (GPU if available),
+    performs a forward pass to obtain predictions, and computes the AUC score based on the ground
+    truth and predicted values.
+
+    Parameters:
+        model (torch.nn.Module): The model to be evaluated.
+        X_val (torch.Tensor): Validation input data.
+        y_val (torch.Tensor): Ground truth labels for the validation data.
+        seq_len_val (torch.Tensor): Sequence lengths for the validation data.
+
+    Returns:
+        float: The AUC score of the model on the validation data.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     X_val, seq_len_val = X_val.to(device), seq_len_val.to(device)
@@ -157,7 +191,7 @@ def evaluate_model(model, X_val, y_val, seq_len_val):
     auc = roc_auc_score(y_gt, y_pred)
     return auc
 
-'''
+
 run_hyper('Datasets/lending_log_high.xes', 'lending', 6, 'high')
 
 run_hyper('Datasets/lending_log_medium.xes', 'lending', 6, 'medium')
@@ -175,8 +209,6 @@ run_hyper('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
 run_hyper('Datasets/renting_log_high.xes', 'renting', 6, 'high')
 
 run_hyper('Datasets/renting_log_medium.xes', 'renting', 6, 'medium')
-
-'''
 
 run_hyper('Datasets/renting_log_low.xes', 'renting', 6, 'low')
 

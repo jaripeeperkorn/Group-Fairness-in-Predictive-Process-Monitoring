@@ -49,6 +49,27 @@ def get_best_hyperparameter_combination(logname, addendum):
         return None
 
 def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sensitive_parameter, loss_fct):
+    """
+    Runs a full experiment pipeline including data preprocessing, model training, 
+    evaluation, and result plotting.
+
+    This function executes a series of steps to preprocess the dataset, train an 
+    LSTM model with specified hyperparameters, evaluate the model's performance 
+    using various metrics, and plot the probability distribution curves for a 
+    sensitive feature. It iterates over different lambda values for specific loss 
+    functions and saves the results to a CSV file.
+
+    Parameters:
+        dataset_name (str): The name of the dataset file.
+        logname (str): The log name used for preprocessing and hyperparameter tuning.
+        addendum (str): Additional identifier for the log file.
+        max_prefix_length (int): Maximum prefix length for sequence generation.
+        sensitive_parameter (str): Name of the sensitive attribute.
+        loss_fct (str): The loss function to be used during model training.
+
+    Returns:
+        None
+    """
     if loss_fct == "wasserstein":
         lambdas = [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
     if loss_fct == "KL_divergence":
@@ -163,43 +184,3 @@ run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renti
 
 run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:married", loss_fct='wasserstein')
 
-
-"""
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='KL_divergence')
-
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='KL_divergence')
-
-
-
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:religious", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='KL_divergence')
-
-
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='KL_divergence')
-
-
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='KL_divergence')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:married", loss_fct='KL_divergence')
-
-"""

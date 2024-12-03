@@ -1,6 +1,5 @@
 from scipy.stats import gaussian_kde
 import numpy as np
-import torch
 
 from statsmodels.distributions.empirical_distribution import ECDF
 
@@ -37,13 +36,26 @@ def demographic_parity(y_pred, z_values, threshold=None):
     return parity
 
 
-# Define a function named ABPC that takes in four arguments:
-# y_pred: predicted values
-# z_values: binary values indicating the group membership of each sample
-# bw_method: bandwidth method for the kernel density estimation (default is "scott")
-# sample_n: number of samples to generate for the integration (default is 10000)
-def ABPC(y_pred, z_values, bw_method = "scott", sample_n = 10000):
 
+def ABPC(y_pred, z_values, bw_method = "scott", sample_n = 10000):
+    """
+    Calculate the Area Between Probability Curves (ABPC) for two groups.
+
+    This function computes the ABPC between two groups of predicted values
+    using kernel density estimation (KDE). It evaluates the KDEs over a
+    specified range and calculates the area between the two curves using
+    the trapezoidal rule.
+
+    Parameters:
+        y_pred (array-like): Predicted values.
+        z_values (array-like): Binary values indicating group membership
+            for each sample.
+        bw_method (str, optional): Bandwidth method for KDE. Default is "scott".
+        sample_n (int, optional): Number of samples for integration. Default is 10000.
+
+    Returns:
+        float: The computed ABPC value.
+    """
     # Flatten the input arrays
     y_pred = y_pred.ravel()
     z_values = z_values.ravel()
@@ -69,13 +81,23 @@ def ABPC(y_pred, z_values, bw_method = "scott", sample_n = 10000):
     # Return the computed ABPC value
     return abpc
 
-
-# Define a function named ABCC that takes in three arguments:
-# y_pred: predicted values
-# z_values: binary values indicating the group membership of each sample
-# sample_n: number of samples to generate for the integration (default is 10000)
 def ABCC(y_pred, z_values, sample_n = 10000):
+    """
+    Calculate the Area Between Cumulative Curves (ABCC) for two groups.
 
+    This function computes the ABCC, which is the area between the empirical 
+    cumulative distribution functions (ECDFs) of two groups, identified by 
+    binary group membership values. The integration is performed using the 
+    trapezoidal rule over a specified number of samples.
+
+    Parameters:
+        y_pred (array-like): Predicted values.
+        z_values (array-like): Binary values indicating group membership for each sample.
+        sample_n (int, optional): Number of samples for integration. Default is 10000.
+
+    Returns:
+        float: The computed ABCC value.
+    """
     # Flatten the input arrays
     y_pred = y_pred.ravel()
     z_values = z_values.ravel()

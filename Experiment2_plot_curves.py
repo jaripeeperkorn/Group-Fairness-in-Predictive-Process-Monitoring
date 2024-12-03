@@ -76,7 +76,17 @@ def plot_pareto_curve(csv_path, plot_path, performance_column='auc', fairness_co
         print(f"Missing expected column in CSV: {e}")
 
 def save_all_curves(logname, addendum):
+    """
+    Generate and save Pareto curve plots for different datasets and fairness metrics.
 
+    Parameters:
+        logname (str): The name of the dataset to process, which determines the binary attributes.
+        addendum (str): Additional identifier for the dataset, used in file paths.
+
+    The function iterates over predefined binary attributes and fairness metrics for the specified dataset,
+    constructs file paths for CSV results and plot outputs, and calls `plot_pareto_curve` to generate and save
+    the plots.
+    """
     if logname == 'hiring':
         binarys = ['case:german speaking', 'case:gender', 'case:citizen', 'case:protected', 'case:religious']
     elif logname == 'hospital':

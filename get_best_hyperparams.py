@@ -100,8 +100,6 @@ def find_worst_hyperparameters(logname, addendum):
         return None
 
 
-    
-
 best_combination = get_best_hyperparameter_combination('hiring','high')
 
 worst_hyperparameters = find_worst_hyperparameters('hiring','high')

@@ -1,16 +1,13 @@
 import DP_OOPPM.predictive_models as predictive_models
 import DP_OOPPM.custom_loss_functions as custom_loss_functions
 
-
 import math
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-
 import numpy as np
 
 
 
-#! check if standard values make sense
 def train_and_return_LSTM(X_train, seq_len_train, y_train, s_train, 
                           loss_function, 
                           vocab_sizes, embed_sizes=None, num_numerical_features=None, 
@@ -21,6 +18,43 @@ def train_and_return_LSTM(X_train, seq_len_train, y_train, s_train,
                           get_history=False, 
                           X_val=None, seq_len_val=None, y_val=None, s_val=None,
                           balance_fair_BCE = 0.1):
+    """
+    Trains an LSTM model using the provided training data and returns the trained model.
+
+    This function initializes and trains an LSTM model with specified hyperparameters
+    and loss functions. It supports early stopping based on validation loss and can
+    return training history if requested.
+
+    Parameters:
+        X_train (Tensor): Training input data.
+        seq_len_train (Tensor): Sequence lengths for training data.
+        y_train (Tensor): Training target labels.
+        s_train (Tensor): Sensitive attributes for training data.
+        loss_function (str): The loss function to use ('BCE', 'dp', 'diff_abs', etc.).
+        vocab_sizes (list): List of vocabulary sizes for categorical features.
+        embed_sizes (list, optional): List of embedding sizes for categorical features.
+        num_numerical_features (int, optional): Number of numerical features.
+        dropout (float, optional): Dropout rate for the model.
+        lstm_size (int, optional): Number of units in the LSTM layer.
+        num_lstm (int, optional): Number of LSTM layers.
+        bidirectional (bool, optional): Whether to use a bidirectional LSTM.
+        max_length (int, optional): Maximum sequence length.
+        learning_rate (float, optional): Learning rate for the optimizer.
+        max_epochs (int, optional): Maximum number of training epochs.
+        batch_size (int, optional): Batch size for training.
+        patience (int, optional): Number of epochs to wait for improvement before early stopping.
+        get_history (bool, optional): Whether to return training and validation loss history.
+        X_val (Tensor, optional): Validation input data.
+        seq_len_val (Tensor, optional): Sequence lengths for validation data.
+        y_val (Tensor, optional): Validation target labels.
+        s_val (Tensor, optional): Sensitive attributes for validation data.
+        balance_fair_BCE (float, optional): Balance factor for fairness-aware loss.
+
+    Returns:
+        model (nn.Module): The trained LSTM model.
+        losses (list, optional): List of training losses per epoch, if get_history is True.
+        val_losses (list, optional): List of validation losses per epoch, if get_history is True.
+    """
 
 
     if embed_sizes == None:
@@ -179,15 +213,52 @@ def train_and_return_LSTM(X_train, seq_len_train, y_train, s_train,
         return model
     
 def calculate_loss(outputs, y_batch, s_batch, criterion, criterion_bce, loss_function, balance_fair_BCE):
+    """
+    Calculate the loss for a given batch of outputs and labels.
+
+    This function computes the loss using either Binary Cross Entropy (BCE) or a
+    custom fair loss function, depending on the specified loss function type.
+    If 'BCE' is selected, it returns the BCE loss. Otherwise, it calculates a
+    weighted combination of the BCE loss and a fairness-aware loss.
+
+    Parameters:
+        outputs (torch.Tensor): The predicted outputs from the model.
+        y_batch (torch.Tensor): The true labels for the batch.
+        s_batch (torch.Tensor): The sensitive attribute labels for the batch.
+        criterion (callable): The loss function used for fairness-aware loss.
+        criterion_bce (callable): The BCE loss function.
+        loss_function (str): The type of loss function to use ('BCE' or custom).
+        balance_fair_BCE (float): The weight for balancing BCE and fair loss.
+
+    Returns:
+        torch.Tensor: The calculated loss value.
+    """
     if loss_function == 'BCE':
         return criterion(outputs, y_batch)
-    #! change this when loss functions cleaned up
     fair_loss, _, _, _ = criterion(outputs, s_batch, y_batch)
     bce_loss = criterion_bce(outputs, y_batch)
     return (1.0 - balance_fair_BCE) * bce_loss + balance_fair_BCE * fair_loss
 
 
 def prepare_data_loaders(X_train, seq_len_train, y_train, s_train, X_val, seq_len_val, y_val, s_val, batch_size):
+    """
+    Prepares data loaders for training and validation datasets.
+
+    Args:
+        X_train (Tensor): Training input data.
+        seq_len_train (Tensor): Sequence lengths for training data.
+        y_train (Tensor): Training target data.
+        s_train (Tensor): Additional training data.
+        X_val (Tensor): Validation input data.
+        seq_len_val (Tensor): Sequence lengths for validation data.
+        y_val (Tensor): Validation target data.
+        s_val (Tensor): Additional validation data.
+        batch_size (int): Number of samples per batch.
+
+    Returns:
+        tuple: A tuple containing the training data loader and the validation data loader.
+            The validation data loader is None if validation data is not provided.
+    """
     train_dataset = TensorDataset(X_train, seq_len_train, y_train, s_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     
