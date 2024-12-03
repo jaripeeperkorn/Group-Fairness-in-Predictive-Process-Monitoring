@@ -23,9 +23,9 @@ Datasets/renting_log_low.xes
 Datasets/renting_log_medium-xes.gz
 Datasets/renting_log_medium.xes
 Datasets/Dataset_descriptions.pptx
-Extrafigs
-generate_toy_example_figures.py
 DP_OOPPM/__pycache__
 Preprocessing/__pycache__
+Extrafigs
 make_table.py
 get_information_logs.py
+generate_toy_example_figures.py
