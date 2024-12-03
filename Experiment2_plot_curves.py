@@ -107,9 +107,9 @@ def save_all_curves(logname, addendum):
 
 
 
-#save_all_curves('hiring', 'high')
+save_all_curves('hiring', 'high')
 
-#save_all_curves('lending', 'high')
+save_all_curves('lending', 'high')
 
 save_all_curves('renting', 'high')
 
