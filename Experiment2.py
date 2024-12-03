@@ -18,7 +18,7 @@ def get_best_hyperparameter_combination(logname, addendum):
         dict: The best hyperparameter combination and its corresponding AUC score.
     """
     # Define the log file path
-    log_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
+    log_path = f"Results/Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     
     try:
         # Load the log data
@@ -136,7 +136,7 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
         # Append the result to the list
         results_list.append(result)
 
-        plot_filename = f"Experiment2_full_results/{loss_fct}/{logname}_{addendum}/{sensitive_parameter}/{str(lam)}_plot"
+        plot_filename = f"Results/Experiment2_full_results/{loss_fct}/{logname}_{addendum}/{sensitive_parameter}/{str(lam)}_plot"
         plot_filename = plot_filename.replace(" ", "").replace(":", "").replace(".","")
         plot_filename = plot_filename + ".pdf"
 
@@ -144,7 +144,7 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
 
     # Convert the results list to a DataFrame and save to CSV
     results_df = pd.DataFrame(results_list)
-    output_path = f"Experiment2_full_results/{loss_fct}/{logname}_{addendum}/{sensitive_parameter}/full_results"
+    output_path = f"Results/Experiment2_full_results/{loss_fct}/{logname}_{addendum}/{sensitive_parameter}/full_results"
     output_path = output_path.replace(" ", "").replace(":", "").replace(".","")
     output_path = output_path + ".csv"
     results_df.to_csv(output_path, index=False)

@@ -19,7 +19,7 @@ def get_best_hyperparameter_combination(logname, addendum):
         dict: The best hyperparameter combination and its corresponding AUC score.
     """
     # Define the log file path
-    log_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
+    log_path = f"Results/Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     
     try:
         # Load the log data
@@ -140,7 +140,7 @@ def do_full_experiment(dataset_name, logname, max_prefix_length, addendum):
         # Append the result to the list
         results_list.append(result)
 
-        plot_filename = f"Experiment1_full_results_no_removal/figs/{logname}_{addendum}_{sensitive}_plot.pdf"
+        plot_filename = f"Results/Experiment1_full_results_no_removal/figs/{logname}_{addendum}_{sensitive}_plot.pdf"
         plot_filename = plot_filename.replace(" ", "").replace(":", "")
 
         plot_curves.plot_curves(te_np, s_te, sensitive, plot_filename)
@@ -148,7 +148,7 @@ def do_full_experiment(dataset_name, logname, max_prefix_length, addendum):
 
     # Convert the results list to a DataFrame and save to CSV
     results_df = pd.DataFrame(results_list)
-    output_path = f"Experiment1_full_results_no_removal/{logname}_{addendum}_sensitive_evaluation_results.csv"
+    output_path = f"Results/Experiment1_full_results_no_removal/{logname}_{addendum}_sensitive_evaluation_results.csv"
     results_df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 

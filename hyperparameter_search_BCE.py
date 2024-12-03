@@ -51,7 +51,7 @@ def run_hyper(dataset_name, logname, max_prefix_len, addendum):
                                                learning_rate_lst, dropout_lst))
     
     # Check for existing results file
-    results_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
+    results_path = f"Results/Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     if os.path.exists(results_path):
         # Load existing results
         existing_results_df = pd.read_csv(results_path)

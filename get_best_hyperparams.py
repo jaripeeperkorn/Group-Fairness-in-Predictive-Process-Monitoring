@@ -11,7 +11,7 @@ def get_best_hyperparameter_combination(logname, addendum):
         dict: The best hyperparameter combination and its corresponding AUC score.
     """
     # Define the log file path
-    log_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
+    log_path = f"Results/Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     
     try:
         # Load the log data
@@ -53,7 +53,7 @@ def find_worst_hyperparameters(logname, addendum):
         dict: A dictionary with each hyperparameter and its value that led to the worst average AUC score.
     """
     # Define the log file path
-    log_path = f"Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
+    log_path = f"Results/Hyperparameters/BCE/{logname}_{addendum}_hyperparameter_tuning_results.csv"
     
     try:
         # Load the log data
