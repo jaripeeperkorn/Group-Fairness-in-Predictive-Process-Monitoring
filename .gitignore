@@ -23,15 +23,8 @@ Datasets/renting_log_low.xes
 Datasets/renting_log_medium-xes.gz
 Datasets/renting_log_medium.xes
 Datasets/Dataset_descriptions.pptx
-playground.py
-playground.ipynb
-playground2.ipynb
-playground3.ipynb
+generate_toy_example_figures.py
 DP_OOPPM/__pycache__
-.ipynb_checkpoints
-alexander_code.py
 Preprocessing/__pycache__
-Hyperparameters/BCE/OLD_WRONG_hiring_hyperparameter_tuning_results.csv
 make_table.py
 get_information_logs.py
-generate_toy_example_figures.py
