@@ -20,9 +20,21 @@ Preprocssing contains all the function needed to preprocess the event logs.
 
 ## Rerunning the experiment
 
+To recreate the results of the experiments, run:
+
+```recreate_experiments.py```
+
+## Rerunning the experiment part by part
+
 The dependencies can be found in `environment.yaml`.
 
-The data used in the experiment can be found here, and should be placed in a folder named Datasets: https://zenodo.org/records/8059489
+To recreate the folder structure needed, run following script:
+
+```create_folder_structure```
+
+The data used in the experiment can be found here (https://zenodo.org/records/8059489). It can be downloaded, by running the script:
+
+```download_data```
 
 To rerun the hyperparameter search run:
 
