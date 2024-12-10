@@ -192,23 +192,23 @@ def evaluate_model(model, X_val, y_val, seq_len_val):
     return auc
 
 
-run_hyper('Datasets/lending_log_high.xes', 'lending', 6, 'high')
+run_hyper('Datasets/lending_log_high.xes.gz', 'lending', 6, 'high')
 
-run_hyper('Datasets/lending_log_medium.xes', 'lending', 6, 'medium')
+run_hyper('Datasets/lending_log_medium.xes.gz', 'lending', 6, 'medium')
 
-run_hyper('Datasets/lending_log_low.xes', 'lending', 6, 'low')
-
-
-run_hyper('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
-
-run_hyper('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
-
-run_hyper('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
+run_hyper('Datasets/lending_log_low.xes.gz', 'lending', 6, 'low')
 
 
-run_hyper('Datasets/renting_log_high.xes', 'renting', 6, 'high')
+run_hyper('Datasets/hiring_log_high.xes.gz', 'hiring', 6, 'high')
 
-run_hyper('Datasets/renting_log_medium.xes', 'renting', 6, 'medium')
+run_hyper('Datasets/hiring_log_medium.xes.gz', 'hiring', 6, 'medium')
 
-run_hyper('Datasets/renting_log_low.xes', 'renting', 6, 'low')
+run_hyper('Datasets/hiring_log_low.xes.gz', 'hiring', 6, 'low')
+
+
+run_hyper('Datasets/renting_log_high.xes.gz', 'renting', 6, 'high')
+
+run_hyper('Datasets/renting_log_medium.xes.gz', 'renting', 6, 'medium')
+
+run_hyper('Datasets/renting_log_low.xes.gz', 'renting', 6, 'low')
 

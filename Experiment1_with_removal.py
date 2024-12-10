@@ -151,20 +151,20 @@ def do_full_experiment(dataset_name, logname, max_prefix_length, addendum):
     print(f"Results saved to {output_path}")
 
 
-do_full_experiment('Datasets/lending_log_high.xes', 'lending', 6, 'high')
+do_full_experiment('Datasets/lending_log_high.xes.gz', 'lending', 6, 'high')
 
-do_full_experiment('Datasets/lending_log_medium.xes', 'lending', 6,  'medium')
+do_full_experiment('Datasets/lending_log_medium.xes.gz', 'lending', 6,  'medium')
 
-do_full_experiment('Datasets/lending_log_low.xes', 'lending', 6,  'low')
+do_full_experiment('Datasets/lending_log_low.xes.gz', 'lending', 6,  'low')
 
-do_full_experiment('Datasets/hiring_log_high.xes', 'hiring', 6, 'high')
+do_full_experiment('Datasets/hiring_log_high.xes.gz', 'hiring', 6, 'high')
 
-do_full_experiment('Datasets/hiring_log_medium.xes', 'hiring', 6, 'medium')
+do_full_experiment('Datasets/hiring_log_medium.xes.gz', 'hiring', 6, 'medium')
 
-do_full_experiment('Datasets/hiring_log_low.xes', 'hiring', 6, 'low')
+do_full_experiment('Datasets/hiring_log_low.xes.gz', 'hiring', 6, 'low')
 
-do_full_experiment('Datasets/renting_log_high.xes', 'renting', 6, 'high')
+do_full_experiment('Datasets/renting_log_high.xes.gz', 'renting', 6, 'high')
 
-do_full_experiment('Datasets/renting_log_medium.xes', 'renting', 6,  'medium')
+do_full_experiment('Datasets/renting_log_medium.xes.gz', 'renting', 6,  'medium')
 
-do_full_experiment('Datasets/renting_log_low.xes', 'renting', 6,  'low')
+do_full_experiment('Datasets/renting_log_low.xes.gz', 'renting', 6,  'low')

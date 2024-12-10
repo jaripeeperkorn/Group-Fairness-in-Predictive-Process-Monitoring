@@ -152,35 +152,35 @@ def run_full_experiment(dataset_name, logname, addendum, max_prefix_length, sens
         
 
 
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes.gz', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
 
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes.gz', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
 
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
-
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
-
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
-
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes.gz', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:protected", loss_fct='wasserstein')
 
 
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:religious", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes.gz', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
 
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes.gz', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
 
-run_full_experiment(dataset_name='Datasets/hiring_log_high.xes', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='wasserstein')
-
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='wasserstein')
-
-run_full_experiment(dataset_name='Datasets/lending_log_high.xes', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes.gz', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:gender", loss_fct='wasserstein')
 
 
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes.gz', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:religious", loss_fct='wasserstein')
 
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes.gz', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='wasserstein')
 
-run_full_experiment(dataset_name='Datasets/renting_log_high.xes', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:married", loss_fct='wasserstein')
+run_full_experiment(dataset_name='Datasets/hiring_log_high.xes.gz', logname='hiring', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='wasserstein')
+
+
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes.gz', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='wasserstein')
+
+run_full_experiment(dataset_name='Datasets/lending_log_high.xes.gz', logname='lending', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='wasserstein')
+
+
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes.gz', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:citizen", loss_fct='wasserstein')
+
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes.gz', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:german speaking", loss_fct='wasserstein')
+
+run_full_experiment(dataset_name='Datasets/renting_log_high.xes.gz', logname='renting', addendum='high', max_prefix_length=6, sensitive_parameter="case:married", loss_fct='wasserstein')
 
