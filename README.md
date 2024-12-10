@@ -30,15 +30,15 @@ The dependencies can be found in `environment.yaml`.
 
 To recreate the folder structure needed, run following script:
 
-```create_folder_structure```
+```create_folder_structure.py```
 
 The data used in the experiment can be found here (https://zenodo.org/records/8059489). It can be downloaded, by running the script:
 
-```download_data```
+```download_data.py```
 
 To rerun the hyperparameter search run:
 
-```hyperparameter_search_BCE```
+```hyperparameter_search_BCE.py```
 
 To rerun the full experiment testing all sensitive parameters, run the code in:
 
