@@ -3,7 +3,7 @@
 ## Description
 
 This is the github repository containing the code, experiments and experimental results used in the paper:
-> Achieving Group Fairness in Outcome Oriented Predictive Process Monitoring
+> Achieving Group Fairness through Independence in Predictive Process Monitoring
 > 
 > Jari Peeperkorn and Simon De Vos
 
