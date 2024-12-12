@@ -20,7 +20,7 @@ Preprocssing contains all the function needed to preprocess the event logs.
 
 ## Rerunning the experiment
 
-To recreate the results of the experiments, run:
+To recreate the results of the experiments (conda required), run:
 
 ```recreate_experiments.py```
 
