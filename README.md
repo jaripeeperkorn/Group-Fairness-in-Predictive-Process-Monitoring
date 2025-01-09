@@ -13,7 +13,7 @@ The folder DP_OOPPM contains the code to train and evaluate the predictive model
 
 This also contains our pytorch compatible loss functions, and the metrics that can be used with any model's output.
 
-Preprocssing contains all the function needed to preprocess the event logs.
+Preprocessing contains all the function needed to preprocess the event logs.
 
 ```tutorials to be added```
 
