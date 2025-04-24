@@ -4,7 +4,7 @@
 
 This is the github repository containing the code, experiments and experimental results used in the paper:
 > Achieving Group Fairness through Independence in Predictive Process Monitoring
-> 
+> (To be presented at Caise 2025)
 > Jari Peeperkorn and Simon De Vos
 
 ## Using the code
